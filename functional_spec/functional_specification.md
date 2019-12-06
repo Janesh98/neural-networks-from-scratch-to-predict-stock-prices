@@ -117,7 +117,7 @@
    **4. 1 Context Diagram**
    A system context diagram is a diagram that defines the boundary between the system, or part of a system, and its environment, showing the entities that interact with it.
 
-   ![Context Diagram](/Users/paulmcnally/Downloads/contextDiagram.png)
+   ![Context Diagram](./images/contextDiagram.png)
 
    
 
@@ -130,7 +130,7 @@
    **4.2 Use Case Diagram**
    A use case diagram at its simplest is a representation of a user's interaction with the system that shows the relationship between the user and the different use cases in which the user is involved.
 
-   ![Use Case Diagram](/Users/paulmcnally/Downloads/useCaseDiagram.png)
+   ![Use Case Diagram](./images/useCaseDiagram.png)
 
    ##### **4.3 Use case description**
    * **Use case name**: Collect data
@@ -153,26 +153,26 @@
 
    **4.4 Neural Network Overview**
    In the diagram below data flows from the input cell to the recurrent cell, within these cells is a memory cell, this is the defining characteristic of an LSTM neural network, standard recurrent neural networks have the ability to remember output from a few iterations ago but LSTM neural networks can remember output from many iterations ago thanks to its memory cell, this allows the neural network to make better predictions where the previous data heavily influences the next such as stock price data.
-    ![LSTM](/Users/paulmcnally/Downloads/LSTM.png)
+    ![LSTM](./images/LSTM.png)
 
 5. #### High-Level Design
 
    **5.1 Data flow Diagram**:
    A data flow diagram or DFD represents the flow of data of a process or system. The DFD provides information about the outputs and inputs of each entity and the process itself.
 
-   ![Data flow diagram](/Users/paulmcnally/Downloads/dataFlow.png)
+   ![Data flow diagram](./images/dataFlow.png)
 
    **5.2 LSTM Neural Network Design**
 
    The image below outlines how data flows from the starting input of the input vector Xt to the output of ht and how the previous outputs ht-1 and ct-1 are reused to influence the next output of the neural network.
-   ![LSTM Neural Network Design](https://miro.medium.com/max/1445/1*laH0_xXEkFE0lKJu54gkFQ.png)
+   ![LSTM Neural Network Design](./images/LSTM_cell.png)
    **Reference**: [Understanding LSTM and its Diagrams](https://medium.com/mlreview/understanding-lstm-and-its-diagrams-37e2f46f1714)
 
 6. #### **Preliminary Schedule**
 
    Our project plan is displayed in the form of a Gantt chart below, it shows each task that has to be undertaken before the product is fully complete. Each activity is represented by a bar, the position and length of this bar reflects the start date, duration and the end date of each activity. On the right side of the Gantt chart it shows the status of each task as either active, upcoming or completed. It also shows which group member or member has been assigned to carry out a particular task.
 
-   ![Gantt chart](/Users/paulmcnally/Downloads/ProjectPlan.png)
+   ![Gantt chart](./images/ProjectPlan.png)
 
 7. #### **Appendices**
 
