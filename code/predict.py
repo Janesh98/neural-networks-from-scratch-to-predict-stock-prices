@@ -32,5 +32,14 @@ def main():
     output *= 1000
     print(output)
 
+    # plot actual price and prediction
+    plt.plot(df[:100], "r")
+    plt.plot(output, "b")
+    plt.xlabel("Days")
+    plt.ylabel("Price")
+    plt.title("Stock Prediction")
+    plt.legend(["Actual", "Prediction"])
+    plt.show()
+
 if __name__ == "__main__":
     main()
