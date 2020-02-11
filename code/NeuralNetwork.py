@@ -22,12 +22,8 @@ class NeuralNetwork:
     # sigmoid activation function
     def sigmoid(self, x):
         return 1/(1+np.exp(-x))
-        
-    def train(self, input, target):
-        # convert inputs and target list to 2d arrays
-        input = np.array(input, ndmin=2).T
-        target = np.array(target, ndmin=2).T
-        
+
+    def forward(self, input):
         # calculate signals into hidden layer
         hidden_input = np.dot(self.wih, input)
         # calculate the signals emerging from hidden layer
@@ -35,41 +31,48 @@ class NeuralNetwork:
         
         # calculate signals into final output layer
         final_input = np.dot(self.who, hidden_output)
+
         # calculate the signals emerging from final output layer
         final_output = self.sigmoid(final_input)
-        
+
+        return final_output, hidden_output
+
+    def error(self, target, final_output):
         # output layer error is the (target - actual)
         output_error = target - final_output
         # hidden layer error is the output_error, split by weights, recombined at hidden nodes
         hidden_error = np.dot(self.who.T, output_error) 
+
+        return output_error, hidden_error
         
-        # update the weights for the links between the hidden and output layers
-        self.who += self.learn * np.dot((output_error * final_output * (1.0 - final_output)), np.transpose(hidden_output))
         
-        # update the weights for the links between the input and hidden layers
-        self.wih += self.learn * np.dot((hidden_error * hidden_output * (1.0 - hidden_output)), np.transpose(input))
+    def train(self, input, target):
+        # convert lists to 2d arrays
+        input = np.array(input, ndmin=2).T
+        target = np.array(target, ndmin=2).T
+
+        final_output, hidden_output = self.forward(input)
+
+        output_error, hidden_error = self.error(target, final_output)
+        
+        # update the weights between hidden and output
+        self.who += self.learn * np.dot((output_error * final_output * (1.0 - final_output)), hidden_output.T)
+        
+        # update the weights between input and hidden
+        self.wih += self.learn * np.dot((hidden_error * hidden_output * (1.0 - hidden_output)), input.T)
 
         return final_output
 
     def test(self, input):
-        # ranspose input
+        # transpose input
         input = input.T
-        
-        # calculate signals into hidden layer
-        hidden_input = np.dot(self.wih, input)
-        # calculate the signals emerging from hidden layer
-        hidden_output = self.sigmoid(hidden_input)
-        
-        # calculate signals into final output layer
-        final_input = np.dot(self.who, hidden_output)
-
-        # calculate the signals emerging from final output layer
-        final_output = self.sigmoid(final_input)
+        final_output, hidden_output = self.forward(input)
 
         return final_output
 
-def mse(a, b):
-    return (np.square(np.subtract(a, b)).mean()) / 1000
+def mape(actual, prediction): 
+    # mean absolute percentage error (MAPE)
+    return np.mean(np.abs((actual - prediction) / actual)) * 100
 
 def plot(actual, prediction):
     plt.plot(actual, "r")
@@ -127,7 +130,8 @@ def main():
     # change data type so it can be plotted
     prices = pd.DataFrame(output.T)
     print("\nTraining output:\n", prices)
-    print("\nTraining Accuracy: {:.4f}%".format(mse(output, y)))
+    print("\nTraining Accuracy: {:.4f}%".format(mape(output, y)))
+
 
     # [price yesterday, current price] for each day in range
     input = [[df[i-1], df[i]] for i in range(100, 150)]
@@ -147,7 +151,8 @@ def main():
     test = test.T
 
     print("\nTest output:\n", test)
-    print("\nTest Accuracy: {:.4f}%".format(mse(input, test)))
+    print("\nTest Accuracy: {:.4f}%".format(mape(input, test)))
+
 
     # plot actual price and prediction for training and test
     # TODO plot in same window but seperate graphs
