@@ -76,11 +76,12 @@ def mape(actual, prediction):
 
 def plot(actual, prediction):
     plt.plot(actual, "r")
-    plt.plot(prediction, "b")
+    plt.plot(prediction[:98], "b")
+    plt.plot([97 + i for i in range(0, 51)], prediction[97:],  "g")
     plt.xlabel("Days")
     plt.ylabel("Price")
     plt.title("Stock Prediction")
-    plt.legend(["Actual", "Prediction"])
+    plt.legend(["Actual", "Training Prediction", "Test Prediction"])
     plt.grid()
     plt.show()
 
@@ -165,6 +166,7 @@ def main():
     fixed_test = np.concatenate((graph_fix, test))
     for_plot = np.concatenate((prices[:100], fixed_test[100:]))
     plot(df[:150], for_plot)
+
 
 if __name__ == "__main__":
     main()
