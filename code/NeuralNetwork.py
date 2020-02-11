@@ -156,8 +156,15 @@ def main():
 
     # plot actual price and prediction for training and test
     # TODO plot in same window but seperate graphs
-    plot(df[:100], prices)
-    plot(df[:len(input)], test)
+    # plot(df[:100], prices)
+    # plot(df[:len(input)], test)
+
+    #plotting training and test on same graph
+    graph_fix = [[0]] * 100
+    graph_fix = np.array(graph_fix, dtype=float)
+    fixed_test = np.concatenate((graph_fix, test))
+    for_plot = np.concatenate((prices[:100], fixed_test[100:]))
+    plot(df[:150], for_plot)
 
 if __name__ == "__main__":
     main()
