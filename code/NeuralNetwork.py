@@ -44,6 +44,13 @@ class NeuralNetwork:
         hidden_error = np.dot(self.who.T, output_error) 
 
         return output_error, hidden_error
+
+    def backpropagation(self, input, hidden_output, final_output, output_error, hidden_error):
+        # update the weights between hidden and output
+        self.who += self.learn * np.dot((output_error * final_output * (1.0 - final_output)), hidden_output.T)
+        
+        # update the weights between input and hidden
+        self.wih += self.learn * np.dot((hidden_error * hidden_output * (1.0 - hidden_output)), input.T)
         
         
     def train(self, input, target):
@@ -54,12 +61,8 @@ class NeuralNetwork:
         final_output, hidden_output = self.forward(input)
 
         output_error, hidden_error = self.error(target, final_output)
-        
-        # update the weights between hidden and output
-        self.who += self.learn * np.dot((output_error * final_output * (1.0 - final_output)), hidden_output.T)
-        
-        # update the weights between input and hidden
-        self.wih += self.learn * np.dot((hidden_error * hidden_output * (1.0 - hidden_output)), input.T)
+
+        self.backpropagation(input, hidden_output, final_output, output_error, hidden_error)
 
         return final_output
 
@@ -160,12 +163,12 @@ def main():
     # plot(df[:100], prices)
     # plot(df[:len(input)], test)
 
-    #plotting training and test on same graph
+    # plotting training and test on same graph
     graph_fix = [[0]] * 100
     graph_fix = np.array(graph_fix, dtype=float)
     fixed_test = np.concatenate((graph_fix, test))
     for_plot = np.concatenate((prices[:100], fixed_test[100:]))
-    plot(df[:150], for_plot)
+    plot(df[2:150], for_plot)
 
 
 if __name__ == "__main__":
