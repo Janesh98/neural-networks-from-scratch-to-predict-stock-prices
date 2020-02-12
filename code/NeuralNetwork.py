@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from stock import get_stock_data
 import pandas as pd
+import sys
 
 class NeuralNetwork:
 
@@ -78,9 +79,9 @@ def mape(actual, prediction):
     return np.mean(np.abs((actual - prediction) / actual)) * 100
 
 def plot(actual, prediction):
-    plt.plot(actual, "r")
-    plt.plot(prediction[:98], "b")
-    plt.plot([97 + i for i in range(0, 51)], prediction[97:],  "g")
+    plt.plot([0 + i for i in range(0, 150)], actual, "r")
+    plt.plot(prediction[:100], "b")
+    plt.plot([99 + i for i in range(0, 51)], prediction[99:],  "g")
     plt.xlabel("Days")
     plt.ylabel("Price")
     plt.title("Stock Prediction")
@@ -96,8 +97,8 @@ def main():
 
     # X = (adjclose for 2 days ago, adjclose for previous day)
     # y = actual adjclose for current day
-    X = [[df[i-1], df[i]] for i in range(len(df[:100])) if i > 1]
-    y = [[df[i]] for i in range(len(df)) if i > 2 and i <= 100]
+    X = [[df[i-1], df[i]] for i in range(len(df[:101])) if i >= 1]
+    y = [[df[i]] for i in range(len(df)) if i > 1 and i <= 101]
 
     X = np.array(X, dtype=float)
     y = np.array(y, dtype=float)
@@ -168,7 +169,7 @@ def main():
     graph_fix = np.array(graph_fix, dtype=float)
     fixed_test = np.concatenate((graph_fix, test))
     for_plot = np.concatenate((prices[:100], fixed_test[100:]))
-    plot(df[2:150], for_plot)
+    plot(df[2:152], for_plot)
 
 
 if __name__ == "__main__":
