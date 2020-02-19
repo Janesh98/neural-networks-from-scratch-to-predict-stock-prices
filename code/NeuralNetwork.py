@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from stock import get_stock_data
+from sklearn.metrics import mean_squared_error
+import math
 import pandas as pd
 import sys
 
@@ -110,25 +112,39 @@ def plot(actual, prediction):
     plt.grid()
     plt.show()
 
+def mape(actual, prediction): 
+    # mean absolute percentage error (MAPE)
+    return np.mean(np.abs((actual - prediction) / actual)) * 100
+
+def mse(actual, prediction):
+    mse = np.mean((actual - prediction)**2)
+    return mse
+
+def rmse(actual, prediction):
+    return np.sqrt(((actual - prediction) ** 2).mean())
+
 def main():    
     # returns pandas dataframe
     df = get_stock_data("TSLA")
     # extract only the adjusted close prices of the stock
     df = df['Adj Close']
 
+    print(df)
+
     # X = (adjclose for 2 days ago, adjclose for previous day)
     # y = actual adjclose for current day
-    X = [[df[i-1], df[i]] for i in range(len(df[:101])) if i >= 1]
-    y = [[df[i]] for i in range(len(df)) if i > 1 and i <= 101]
+    X = [[df[i-2], df[i-1]] for i in range(len(df[:102])) if i >= 2]
+    y = [[i] for i in df[2:102]]
 
     X = np.array(X, dtype=float)
     y = np.array(y, dtype=float)
 
 
     assert len(X) == len(y)
+    print(len(X), len(y))
 
     print("\ninput:\n", X)
-    print("\ntarget output:", y)
+    print("\nTraining target output:", y)
 
     # Normalize
     X = X/1000
@@ -153,19 +169,33 @@ def main():
 
     # de-Normalize
     output *= 1000
+    y *= 1000
+
+    # transpose
+    output = output.T
 
     # change data type so it can be plotted
-    prices = pd.DataFrame(output.T)
-    print("\nTraining output:\n", prices)
-    print("\nTraining Accuracy: {:.4f}%".format(mape(output, y)))
+    prices = pd.DataFrame(output)
 
+    #print("\nTraining output:\n", output)
 
+    print("\nTraining MSE Accuracy: {:.4f}%".format(100 - mse(y, output)))
+    print("Training RMSE Accuracy: {:.4f}%".format(100 - rmse(y, output)))
+    print("Training MAPE Accuracy: {:.4f}%".format(100 - mape(y, output)))
 
-    # [price yesterday, current price] for each day in range
-    input = [[df[i-1], df[i]] for i in range(100, 150)]
+    # [price 2 days ago, price yesterday] for each day in range
+    input = [[df[i-2], df[i-1]] for i in range(102, 152)]
+    test_target = [[i] for i in df[102:152]]
 
-    # Normalize data
+    assert len(input) == len(test_target)
+
     input = np.array(input, dtype=float)
+    test_target = np.array(test_target, dtype=float)
+
+    #print("\nTest input", input)
+    #print("\nTest target output", test_target)
+
+    # Normalize
     input = input/1000
 
     # test the network with unseen data
@@ -179,16 +209,18 @@ def main():
     test = test.T
 
     #print("\nTest output:\n", test)
-    print("\nTest Accuracy: {:.4f}%".format(mape(input, test)))
 
+    print("\nTest MSE Accuracy: {:.4f}%".format(100 - mse(test_target, test)))
+    print("Test RMSE Accuracy: {:.4f}%".format(100 - rmse(test_target, test)))
+    print("Test MAPE Accuracy: {:.4f}%".format(100 - mape(test_target, test)))
 
     # plotting training and test on same graph
     graph_fix = [[0]] * 100
     graph_fix = np.array(graph_fix, dtype=float)
     fixed_test = np.concatenate((graph_fix, test))
     for_plot = np.concatenate((prices[:100], fixed_test[100:]))
-    plot(df[2:152], for_plot)
 
+    plot(df[2:152], for_plot)
 
 if __name__ == "__main__":
     main()
