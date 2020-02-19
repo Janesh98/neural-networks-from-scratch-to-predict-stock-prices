@@ -14,8 +14,11 @@ class NeuralNetwork:
         
         # weight matrices
         # wih = weights from input(i) to hidden(h)
-        self.wih = np.random.normal(0.0, pow(self.input_nodes, -0.5), (self.hidden_nodes, self.input_nodes))
-        self.who = np.random.normal(0.0, pow(self.hidden_nodes, -0.5), (self.output_nodes, self.hidden_nodes))
+        # who = weights from hidden(i) to output(o)
+        self.wih = np.random.randn(self.input_nodes, self.hidden_nodes)
+        self.wih = self.wih.T
+        self.who = np.random.randn(self.hidden_nodes, self.output_nodes)
+        self.who = self.who.T
 
         # learning rate
         self.learn = learning_rate
@@ -109,7 +112,7 @@ def main():
     print("\ntarget output:", y)
 
     # Normalize
-    X = X/np.amax(X, axis=0)
+    X = X/1000
     y = y/1000 #make y less than 1
 
     input_nodes = 2
@@ -138,6 +141,7 @@ def main():
     print("\nTraining Accuracy: {:.4f}%".format(mape(output, y)))
 
 
+
     # [price yesterday, current price] for each day in range
     input = [[df[i-1], df[i]] for i in range(100, 150)]
 
@@ -155,14 +159,9 @@ def main():
     # transplose test results
     test = test.T
 
-    print("\nTest output:\n", test)
+    #print("\nTest output:\n", test)
     print("\nTest Accuracy: {:.4f}%".format(mape(input, test)))
 
-
-    # plot actual price and prediction for training and test
-    # TODO plot in same window but seperate graphs
-    # plot(df[:100], prices)
-    # plot(df[:len(input)], test)
 
     # plotting training and test on same graph
     graph_fix = [[0]] * 100
