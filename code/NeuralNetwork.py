@@ -6,7 +6,7 @@ import sys
 
 class NeuralNetwork:
 
-    def __init__(self, input, hidden, output, learning_rate):
+    def __init__(self, input = 2, hidden = 3, output = 1, learning_rate = 0.3):
         # set number of nodes in each input, hidden, output layer
         self.input_nodes = input
         self.hidden_nodes = hidden
@@ -77,6 +77,24 @@ class NeuralNetwork:
 
         return final_output
 
+    def normalise_factor(self, data):
+        biggest = max(data)
+        if len(biggest) > 1:
+            biggest = max(biggest)
+        else:
+            biggest = biggest[0]
+
+        head = int(biggest)
+        return 10 ** len(str(head))
+
+    def normalise_data(self, data, factor):
+        data = np.array(data, dtype=float)
+        return data/factor
+
+    def denormalise_data(self, data, factor):
+        return data * factor
+
+
 def mape(actual, prediction): 
     # mean absolute percentage error (MAPE)
     return np.mean(np.abs((actual - prediction) / actual)) * 100
@@ -105,6 +123,7 @@ def main():
 
     X = np.array(X, dtype=float)
     y = np.array(y, dtype=float)
+
 
     assert len(X) == len(y)
 
