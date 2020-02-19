@@ -1,51 +1,82 @@
 import numpy as np
-from stock import get_stock_data
 import matplotlib.pyplot as plt
-from simplenn import Neural_Network, trainer
+from stock import get_stock_data
+import pandas as pd
+import sys
+from NeuralNetwork import NeuralNetwork
 
-def mse(a, b):
-    return (np.square(np.subtract(a, b)).mean()) / 1000
-
-def main():
-    df = get_stock_data("TSLA")
-    df = df['Adj Close']
-
-    # X = (adjclose for 2 days ago, adjclose for previous day), y = actual adjclose for current day
-    X = [[df[i-1], df[i]] for i in range(len(df[:100])) if i > 1]
-    y = [[df[i]] for i in range(len(df)) if i > 2 and i <= 100]
-
-    X = np.array(X, dtype=float)
-    y = np.array(y, dtype=float)
-
-    assert len(X) == len(y)
-
-    #print(len(X), X, sep="\n")
-    #print(len(y), y, sep="\n")
-
-    # Normalize
-    X = X/np.amax(X, axis=0)
-    y = y/1000 #make y less than 1
-
-    NN = Neural_Network()
-    T = trainer(NN)
-    T.train(X,y)
-    NN.costFunctionPrime(X,y)
-    output = NN.forward(X)
-    # multiply every element in numpy array by 1000
-    output *= 1000
-    print(output)
-
-    print("\naccuracy: {:.4f}%".format(mse(y, output)))
-
-    # plot actual price and prediction
-    plt.plot(df[:100], "r")
-    plt.plot(output, "b")
+def plot(actual, prediction):
+    plt.plot([0 + i for i in range(0, 150)], actual, "r")
+    plt.plot(prediction[:100], "b")
+    plt.plot([99 + i for i in range(0, 51)], prediction[99:],  "g")
     plt.xlabel("Days")
     plt.ylabel("Price")
     plt.title("Stock Prediction")
-    plt.legend(["Actual", "Prediction"])
+    plt.legend(["Actual", "Training Prediction", "Test Prediction"])
     plt.grid()
     plt.show()
+    
+def main():
+    input_nodes = 2
+    hidden_nodes = 3
+    output_nodes = 1
 
-if __name__ == "__main__":
+    learning_rate = 0.3
+
+    # create neural network
+    NN = NeuralNetwork(input_nodes,hidden_nodes,output_nodes, learning_rate)
+
+    ticker = input("Enter company's ticker symbol(e.g. TSLA)\n")
+    ticker = ticker.upper()
+    df = get_stock_data(ticker)
+    df = df['Adj Close']
+
+
+    # X = (adjclose for 2 days ago, adjclose for previous day)
+    # y = actual adjclose for current day
+    X = [[df[i-1], df[i]] for i in range(len(df[:101])) if i >= 1]
+    y = [[df[i]] for i in range(len(df)) if i > 1 and i <= 101]
+
+    normalising_factor = NN.normalise_factor(X)
+
+    X = NN.normalise_data(X, normalising_factor)
+    y = NN.normalise_data(y, normalising_factor)
+
+    assert len(X) == len(y)
+
+    # number of training cycles
+    training_cycles = 100
+
+    # train the neural network
+    for cyclewi in range(training_cycles):
+        for n in X:
+            output = NN.train(X, y)
+
+    output = NN.denormalise_data(output, normalising_factor)
+    prices = pd.DataFrame(output.T)
+
+    # [price yesterday, current price] for each day in range
+    inputs = [[df[i-1], df[i]] for i in range(100, 150)]
+
+    # Normalize data
+    inputs = NN.normalise_data(inputs, normalising_factor)
+
+    # test the network with unseen data
+    test = NN.test(inputs)
+
+    # de-Normalize data
+    inputs = NN.denormalise_data(inputs, normalising_factor)
+    test = NN.denormalise_data(test, normalising_factor)
+
+    # transplose test results
+    test = test.T
+
+    graph_fix = [[0]] * 100
+    graph_fix = np.array(graph_fix, dtype=float)
+    fixed_test = np.concatenate((graph_fix, test))
+    for_plot = np.concatenate((prices[:100], fixed_test[100:]))
+    plot(df[2:152], for_plot)
+
+
+if __name__ == '__main__':
     main()
