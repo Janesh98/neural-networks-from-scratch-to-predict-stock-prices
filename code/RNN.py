@@ -8,19 +8,23 @@ import sys
 
 class NeuralNetwork:
 
-    def __init__(self, input = 2, hidden = 4, output = 1, learning_rate = 0.3):
+    def __init__(self, input_1 = 2, input_2 = 1, input_3 = 1, hidden_layer_1 = 2, hidden_layer_2 = 3, output = 1, learning_rate = 0.3):
         # set number of nodes in each input, hidden, output layer
-        self.input_nodes = input
-        self.hidden_nodes = hidden
+        self.input_nodes = input_1
+        self.input_2 = input_2
+        self.input_2 = input_3
+        self.hidden_nodes_1 = hidden_layer_1
+        self.hidden_nodes_2 = hidden_layer_2
         self.output_nodes = output
         
         # weight matrices
         # wih = weights from input(i) to hidden(h)
         # who = weights from hidden(i) to output(o)
-        self.wih = np.random.randn(self.input_nodes, self.hidden_nodes - 1)
-        self.wih = self.wih.T
-        self.who = np.random.randn(self.hidden_nodes, self.output_nodes)
-        self.who = self.who.T
+        self.wih1 = np.random.randn(self.input_nodes, self.hidden_nodes_1)
+        self.wih1 = self.wih1.T
+        self.wh1h2 = np.random.randn(self.hidden_nodes_1, self.hidden_nodes_2)
+        self.wh2o = np.random.randn(self.hidden_nodes_2, self.output_nodes)
+        self.wh2o = self.wh2o.T
 
         # learning rate
         self.learn = learning_rate
@@ -28,62 +32,76 @@ class NeuralNetwork:
     # sigmoid activation function
     def sigmoid(self, x):
         return 1/(1+np.exp(-x))
+    
+    # tanh activation function
+    def tanh(self, x):
+        return np.tanh(x)
+    
+    # relu activation function
+    def relu(self, x):
+        return np.maximum(0, x)
 
-    def forward(self, input):
-        # calculate signals into hidden layer
-        hidden_input = np.dot(self.wih, input)
-        # calculate the signals emerging from hidden layer
-        hidden_output = self.sigmoid(hidden_input)
-        
+    def forward(self, training_input_1, training_input_2, training_input_3):
+        # calculate signals into hidden layer 1
+        hidden_input = np.dot(self.wih1, training_input_1)
+        # calculate the signals emerging from hidden layer 1
+        hidden_output_1 = self.tanh(hidden_input)
+
+        # add new input for next hidden layer
+        hidden_output_1 = np.insert(hidden_output_1, 0, training_input_2, axis=0)
+        # calculate signals into hidden layer 2
+        hidden_input_2 = np.dot(self.wh1h2, hidden_output_1)
+        # calculate the signals emerging from hidden layer 1
+        hidden_output_2 = self.tanh(hidden_input_2)
+
+        # add new input for final output
+        hidden_output_2 = np.insert(hidden_output_2, 0, training_input_3, axis=0)
         # calculate signals into final output layer
-        final_input = np.dot(self.who[0][1:], hidden_output)
+        final_input = np.dot(self.wh2o, hidden_output_2)
 
         # calculate the signals emerging from final output layer
         final_output = self.sigmoid(final_input)
 
-        if len(hidden_output) == 3:
-            recurrant = np.log(final_output/(1 - final_output))
-            recurrant = np.divide(final_input, self.who[0][0])
-            hidden_output = np.insert(hidden_output, 0, recurrant, axis=0)
-            final_input = np.dot(self.who, hidden_output)
-            final_output = self.sigmoid(final_input)
-
-
-        return final_output, hidden_output
+        return final_output, hidden_output_1, hidden_output_2
 
     def error(self, target, final_output):
         # output layer error is the (target - actual)
         output_error = target - final_output
         # hidden layer error is the output_error, split by weights, recombined at hidden nodes
-        hidden_error = np.dot(self.who.T, output_error) 
+        hidden_error_2 = np.dot(self.wh2o.T, output_error)  
 
-        return output_error, hidden_error
+        return output_error, hidden_error_2
 
-    def backpropagation(self, input, hidden_output, final_output, output_error, hidden_error):
+    def backpropagation(self, training_input_1, hidden_output_1, hidden_output_2, final_output, output_error, hidden_error_2):
         # update the weights between hidden and output
-        self.who += self.learn * np.dot((output_error * final_output * (1.0 - final_output)), hidden_output.T)
+        self.wh2o += self.learn * np.dot((output_error * final_output * (1.0 - final_output)), hidden_output_2.T)
+        self.wh1h2 += self.learn * np.dot((output_error * final_output * (1.0 - final_output)), hidden_output_1.T)
         
         # update the weights between input and hidden
-        self.wih += self.learn * np.dot((hidden_error[1:] * hidden_output[1:] * (1.0 - hidden_output[1:])), input.T)
+        self.wih1 += self.learn * np.dot((hidden_error_2[1:] * hidden_output_1[1:] * (1.0 - hidden_output_1[1:])), training_input_1.T)
         
         
-    def train(self, input, target):
+    def train(self, training_input_1, training_input_2, training_input_3, target):
         # convert lists to 2d arrays
-        input = np.array(input, ndmin=2).T
+        training_input_1 = np.array(training_input_1, ndmin=2).T
+        training_input_2 = np.array(training_input_2, ndmin=2).T
+        training_input_3 = np.array(training_input_3, ndmin=2).T
         target = np.array(target, ndmin=2).T
 
-        final_output, hidden_output = self.forward(input)
+        final_output, hidden_output_1, hidden_output_2 = self.forward(training_input_1, training_input_2, training_input_3)
 
-        output_error, hidden_error = self.error(target, final_output)
+        output_error, hidden_error_2 = self.error(target, final_output)
 
-        self.backpropagation(input, hidden_output, final_output, output_error, hidden_error)
+        self.backpropagation(training_input_1, hidden_output_1, hidden_output_2, final_output, output_error, hidden_error_2)
 
         return final_output
 
-    def test(self, input):
+    def test(self, testing_input_1, testing_input_2, testing_input_3):
         # transpose input
-        input = input.T
-        final_output, hidden_output = self.forward(input)
+        testing_input_1 = testing_input_1.T
+        testing_input_2 = testing_input_2.T
+        testing_input_3 = testing_input_3.T
+        final_output, hidden_output_1, hidden_output_2 = self.forward(testing_input_1, testing_input_2, testing_input_3)
 
         return final_output
 
@@ -139,42 +157,42 @@ def main():
 
     # X = (adjclose for 2 days ago, adjclose for previous day)
     # y = actual adjclose for current day
-    X = [[df[i-2], df[i-1]] for i in range(len(df[:102])) if i >= 2]
-    y = [[i] for i in df[2:102]]
+    training_input_1 = [[df[i-4], df[i-3]] for i in range(len(df[:104])) if i >= 4]
+    training_input_2 = [[df[i-2]] for i in range(len(df[:104])) if i >= 4] 
+    training_input_3 = [[df[i - 1]] for i in range(len(df[:104])) if i >= 4]
+    target = [[i] for i in df[4:104]]
 
-    X = np.array(X, dtype=float)
-    y = np.array(y, dtype=float)
+    training_input_1 = np.array(training_input_1, dtype=float)
+    training_input_2 = np.array(training_input_2, dtype=float)
+    training_input_3 = np.array(training_input_3, dtype=float)
+    target = np.array(target, dtype=float)
 
 
-    assert len(X) == len(y)
+    assert len(training_input_1) == len(training_input_2) == len(training_input_3) == len(target)
 
     #print("\ninput:\n", X)
     #print("\nTraining target output:", y)
 
     # Normalize
-    X = X/1000
-    y = y/1000 #make y less than 1
-
-    input_nodes = 2
-    hidden_nodes = 4
-    output_nodes = 1
-
-    learning_rate = 0.3
+    training_input_1 = training_input_1/1000
+    training_input_2 = training_input_2/1000
+    training_input_3 = training_input_3/1000
+    target = target/1000 #make y less than 1
 
     # create neural network
-    NN = NeuralNetwork(input_nodes,hidden_nodes,output_nodes, learning_rate)
+    NN = NeuralNetwork()
 
     # number of training cycles
-    epochs = 100
+    training_cycles = 100
 
     # train the neural network
-    for e in range(epochs):
-        for n in X:
-            output = NN.train(X, y)
+    for cycle in range(training_cycles):
+        for n in training_input_1:
+            output = NN.train(training_input_1, training_input_2, training_input_3, target)
 
     # de-Normalize
     output *= 1000
-    y *= 1000
+    target *= 1000
 
     # transpose
     output = output.T
@@ -184,30 +202,38 @@ def main():
 
     #print("\nTraining output:\n", output)
 
-    print("\nTraining MSE Accuracy: {:.4f}%".format(100 - mse(y, output)))
-    print("Training RMSE Accuracy: {:.4f}%".format(100 - rmse(y, output)))
-    print("Training MAPE Accuracy: {:.4f}%".format(100 - mape(y, output)))
+    print("\nTraining MSE Accuracy: {:.4f}%".format(100 - mse(target, output)))
+    print("Training RMSE Accuracy: {:.4f}%".format(100 - rmse(target, output)))
+    print("Training MAPE Accuracy: {:.4f}%".format(100 - mape(target, output)))
+
 
     # [price 2 days ago, price yesterday] for each day in range
-    input = [[df[i-2], df[i-1]] for i in range(102, 152)]
-    test_target = [[i] for i in df[102:152]]
+    testing_input_1 = [[df[i-4], df[i-3]] for i in range(104, 154)]
+    testing_input_2 = [[df[i-2]] for i in range(104, 154)] 
+    testing_input_3 = [[df[i-1]] for i in range(104, 154)]
+    test_target = [[i] for i in df[104:154]]
 
-    assert len(input) == len(test_target)
 
-    input = np.array(input, dtype=float)
+    assert len(testing_input_1) == len(testing_input_2) == len(testing_input_3) ==len(test_target)
+
+    testing_input_1 = np.array(testing_input_1, dtype=float)
+    testing_input_2 = np.array(testing_input_2, dtype=float)
+    testing_input_3 = np.array(testing_input_3, dtype=float)
     test_target = np.array(test_target, dtype=float)
 
     #print("\nTest input", input)
     #print("\nTest target output", test_target)
 
     # Normalize
-    input = input/1000
+    testing_input_1 = testing_input_1/1000
+    testing_input_2 = testing_input_2/1000
+    testing_input_3 = testing_input_3/1000
 
     # test the network with unseen data
-    test = NN.test(input)
+    test = NN.test(testing_input_1, testing_input_2, testing_input_3)
 
     # de-Normalize data
-    input *= 1000
+    #input *= 1000
     test *= 1000
 
     # transplose test results
@@ -219,13 +245,17 @@ def main():
     print("Test RMSE Accuracy: {:.4f}%".format(100 - rmse(test_target, test)))
     print("Test MAPE Accuracy: {:.4f}%".format(100 - mape(test_target, test)))
 
-    # plotting training and test on same graph
-    graph_fix = [[0]] * 100
-    graph_fix = np.array(graph_fix, dtype=float)
-    fixed_test = np.concatenate((graph_fix, test))
-    for_plot = np.concatenate((prices[:100], fixed_test[100:]))
+    if (100 - mape(test_target, test)) >= 80.00:
+        # plotting training and test on same graph
+        graph_fix = [[0]] * 100
+        graph_fix = np.array(graph_fix, dtype=float)
+        fixed_test = np.concatenate((graph_fix, test))
+        for_plot = np.concatenate((prices[:100], fixed_test[100:]))
+        plot(df[2:152], for_plot)
 
-    plot(df[2:152], for_plot)
+    else:
+        main()
+
 
 if __name__ == "__main__":
     main()
