@@ -1,26 +1,39 @@
 $(document).ready(() => {
-    $('#test').on('click', (e) => {
+    $('#test').on("click", (e) => {
         //let input  = $('#searchText').val();
         //search(input);
         //e.preventDefault();
         console.log("hi");
         $.get("/hello", function(data) {
-            data = $.parseJSON(data);
-            //console.log(data);
-            plot(data);
+            console.log(data);
+            let train = {
+                x : data.trainY,
+                y : data.train,
+                name : "Train",
+                mode : "lines"
+            };
+
+            let test = {
+                x : data.testY,
+                y : data.test,
+                name : "Prediction",
+                mode : "lines"
+            };
+
+            updatePlot([train, test]);
         })
     });
 });
 
 // POST
-fetch('/hello', {
+fetch("/hello", {
 
     // Specify the method
-    method: 'POST',
+    method: "POST",
 
     // A JSON payload
     body: JSON.stringify({
-        "greeting": "Hello from the browser!"
+        "action": 1
     })
 }).then(function (response) { // At this point, Flask has printed our JSON
     let s = response.text();
@@ -30,14 +43,33 @@ fetch('/hello', {
 
 $.get("/getpythondata", function(data) {
     data = $.parseJSON(data);
-    plot(data);
+
+    let layout = {
+        autosize : true,
+        height : 600,
+        title : 'Stock Prediction',
+        xaxis : {
+          title : 'Day',
+        },
+        yaxis : {
+          title : 'Price',
+          automargin : true,
+        },
+    };
+    plot(data, layout);
 })
 
-function plot(data) {
+function plot(data, layout) {
     console.log("plotting");
     console.log(data);
     data = convertData(data);
-    Plotly.newPlot('plot', data);
+    Plotly.react("plot", data, layout);
+}
+
+function updatePlot(data) {
+    console.log("plotting");
+    console.log(data);
+    Plotly.addTraces("plot", data);
 }
 
 function convertData(stock) {
@@ -50,9 +82,10 @@ function convertData(stock) {
     }
     
     let data = {
-        x: days,
-        y: prices,
-        mode: 'lines'
+        x : days,
+        y : prices,
+        name : "Actual",
+        mode: "lines"
       };
 
     // data is a dictionary within a list [{}]
