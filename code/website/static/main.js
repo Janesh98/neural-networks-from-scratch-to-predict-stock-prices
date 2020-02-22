@@ -1,80 +1,92 @@
-// ticker is name of a stock symbol
-let ticker = "";
+let dates = {"start" : "2019-01-01",
+             "end" : "2019-12-31"};
+
+function handle_date(date, start=true) {
+    // date is string in format y-m-d
+    if (start) {
+        dates["start"] = date;
+    }
+
+    else {
+        dates["end"] = date;
+    }
+    console.log(dates);
+}
 
 $(document).ready(() => {
-
     $('#searchForm').on('submit', (e) => {
         let stock  = $('#searchText').val();
-        ticker = stock;
         console.log(stock);
         e.preventDefault();
 
         // POST
         fetch("/hello", {
-
             method: "POST",
             body: JSON.stringify({
-                "stock": stock
+                "stock": stock,
+                "startDate" : dates["start"],
+                "endDate" : dates["end"]
             })
         }).then(function (response) {
             // get response from flask
-            let s = response.text();
-            console.log(s);
-            return s;
-        })
-    });
+            return response.json()
 
-    $('#test').on("click", (e) => {
-        $.get("/hello", function(data) {
+        }).then(function (data) {
+            // plot new data
             console.log(data);
+            let title = data.stock;
+
+            let actual = {
+                x : data.actualX,
+                y : data.actual,
+                name : "actual",
+                mode : "lines"
+            };
+
             let train = {
-                x : data.trainY,
+                x : data.trainX,
                 y : data.train,
                 name : "Train",
                 mode : "lines"
             };
 
             let test = {
-                x : data.testY,
+                x : data.testX,
                 y : data.test,
                 name : "Prediction",
                 mode : "lines"
             };
 
-            updatePlot([train, test]);
+            plot([actual, train, test], title, convert = false);
+
         })
     });
 });
 
 $.get("/getpythondata", function(data) {
     data = $.parseJSON(data);
+    plot(data);
+})
 
+function plot(data, title="Stock Prediction", convert=true) {
     let layout = {
         autosize : true,
         height : 600,
-        title : 'Stock Prediction',
+        title : title,
         xaxis : {
-          title : 'Day',
+          title : "Day",
         },
         yaxis : {
-          title : 'Price',
+          title : "Price",
           automargin : true,
         },
     };
-    plot(data, layout);
-})
-
-function plot(data, layout) {
     console.log("plotting");
     console.log(data);
-    data = convertData(data);
+    if (convert) {
+        data = convertData(data);
+    }
     Plotly.react("plot", data, layout);
-}
-
-function updatePlot(data) {
-    console.log("plotting");
-    console.log(data);
-    Plotly.addTraces("plot", data);
 }
 
 function convertData(stock) {

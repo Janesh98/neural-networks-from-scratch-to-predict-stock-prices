@@ -14,9 +14,9 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 # prevent caching so website can be updated dynamically
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-def predict(stock="TSLA"):
+def predict(stock, start, end):
     # returns pandas dataframe
-    df = get_stock_data(stock, json=False)
+    df = get_stock_data(stock, start, end, json=False)
     print(df)
 
     # X = (adjclose for 2 days ago, adjclose for previous day)
@@ -84,10 +84,10 @@ def predict(stock="TSLA"):
     # transplose test results
     test = test.T
 
-    return prices, pd.DataFrame(test)
+    return df, prices, pd.DataFrame(test)
 
 
-def get_stock_data(ticker="TSLA", json=True):
+def get_stock_data(ticker, start=[[2019, 1, 1]], end=[2019, 12, 31], json=True):
     csv = ticker + ".csv"
 
     # load csv file if in current directory
@@ -96,8 +96,10 @@ def get_stock_data(ticker="TSLA", json=True):
     
     # download csv from yahoo finance
     else:
-        start = dt.datetime(2019, 1, 1)
-        end = dt.datetime(2019, 12, 31)
+        # y/m/d
+        # *list passes the values in list as parameters
+        start = dt.datetime(*start)
+        end = dt.datetime(*end)
         df = web.DataReader(ticker, 'yahoo', start, end)
         # save csv file
         df.to_csv("..\stock_data_csv\/" + csv)
@@ -118,31 +120,41 @@ def index():
 
 @app.route('/getpythondata')
 def get_python_data():
-    return get_stock_data()
+    return get_stock_data("TSLA")
 
-@app.route('/hello', methods=['GET', 'POST'])
+@app.route('/hello', methods=['POST'])
 def hello():
-
     # POST request
     if request.method == 'POST':
         print('Incoming..')
         # convert to JSON
-        stock = request.get_json(force=True)["stock"]
-        print(stock)
-        return 'OK', 200
+        data = request.get_json(force=True)
+        stock = data["stock"].upper()
+        start = data["startDate"].split("-")
+        end = data["endDate"].split("-")
 
-    # GET request
-    else:
-        train_res, test_res = predict()
+        # convert strings to integers
+        start, end = [int(s) for s in start], [int(s) for s in end]
+        print(stock, start, end)
+
+        actual, train_res, test_res = predict(stock, start, end)
+
         # convert pandas dataframe to list
+        actual = [i for i in actual]
         train_res, test_res = [i for i in train_res[0][:]], [i for i in test_res[0][:]]
+
         # range of y values for plotting
-        trainY = [i for i in range(len(train_res))] 
-        testY = [i for i in range(len(train_res) - 1, len(train_res) + len(test_res))]
-        return {"train" : train_res,
-                "trainY" : trainY, 
+        actualX = [i for i in range(len(actual))] 
+        trainX = [i for i in range(len(train_res))] 
+        testX = [i for i in range(len(train_res) - 1, len(train_res) + len(test_res))]
+
+        return {"stock" : stock,
+                "actual" : actual,
+                "actualX" : actualX,
+                "train" : train_res,
+                "trainX" : trainX, 
                 "test" : test_res,
-                "testY" : testY}
+                "testX" : testX}
         
 if __name__ == '__main__':
     app.run(host = "0.0.0.0", port = 3000, debug=True)
