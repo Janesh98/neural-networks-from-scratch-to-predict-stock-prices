@@ -87,31 +87,23 @@ def predict(stock, start, end):
     return df, prices, pd.DataFrame(test)
 
 
-def get_stock_data(ticker, start=[[2019, 1, 1]], end=[2019, 12, 31], json=True):
-    csv = ticker + ".csv"
+def get_stock_data(ticker, start=[2019, 1, 1], end=[2019, 12, 31], json=True):
+    # *list passes the values in list as parameters
+    start = dt.datetime(*start)
+    end = dt.datetime(*end)
 
-    # load csv file if in current directory
-    if csv in listdir(path="..\stock_data_csv\/"):
-        df = pd.read_csv("..\stock_data_csv\/" + csv)
-    
     # download csv from yahoo finance
-    else:
-        # y/m/d
-        # *list passes the values in list as parameters
-        start = dt.datetime(*start)
-        end = dt.datetime(*end)
-        df = web.DataReader(ticker, 'yahoo', start, end)
-        # save csv file
-        df.to_csv("..\stock_data_csv\/" + csv)
-    
+    df = web.DataReader(ticker, 'yahoo', start, end)
+    # extract adjusted close column
     df = df["Adj Close"]
-
-    # return data as JSON
+    # remove Date column
+    df = pd.DataFrame([i for i in df])[0]
     if json:
+        # return data as JSON
         return df.to_json()
 
-    # return data as csv
     else:
+        # return data as csv
         return df
 
 @app.route('/')
