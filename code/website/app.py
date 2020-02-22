@@ -14,58 +14,74 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 # prevent caching so website can be updated dynamically
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
+def train_test_split(df, split=0.75):
+    # if split=0.75, splits data into 75% training, 25% test
+    # provides targets for training and accuracy measurments
+    max_index = round((len(df) - 1) * split)
+
+    # adjusted close price [2 days ago, 1 day ago]
+    train_inputs = [[df[i-2], df[i-1]] for i in range(2, max_index)]
+    # target is the next day for a given input above
+    # e.g inputs = [day1, day2], [day2, day3]
+    #     targets = [day3, day4]
+    train_targets = [[i] for i in df[2 : max_index]]
+
+    assert len(train_inputs) == len(train_targets)
+
+    test_inputs = [[df[i-2], df[i-1]] for i in range(max_index + 2, len(df))]
+    test_targets = [[i] for i in df[max_index + 2:]]
+
+    assert len(test_inputs) == len(test_targets)
+
+    return train_inputs, train_targets, test_inputs, test_targets
+
 def predict(stock, start, end):
     input_nodes = 2
     hidden_nodes = 3
     output_nodes = 1
-
     learning_rate = 0.3
 
     # create neural network
     NN = NeuralNetwork(input_nodes,hidden_nodes,output_nodes, learning_rate)
 
+    # get stock data
     df = get_stock_data(stock, start, end, json=False)
 
-    # X = (adjclose for 2 days ago, adjclose for previous day)
-    # y = actual adjclose for current day
-    X = [[df[i-1], df[i]] for i in range(len(df[:101])) if i >= 1]
-    y = [[df[i]] for i in range(len(df)) if i > 1 and i <= 101]
+    # split data into training and testing
+    train_inputs, train_targets, test_inputs, test_targets = train_test_split(df)
 
-    normalising_factor = NN.normalise_factor(X)
-
-    X = NN.normalise_data(X, normalising_factor)
-    y = NN.normalise_data(y, normalising_factor)
-
-    assert len(X) == len(y)
+    # normalize data
+    normalising_factor = NN.normalise_factor(train_inputs)
+    train_inputs = NN.normalise_data(train_inputs, normalising_factor)
+    train_targets = NN.normalise_data(train_targets, normalising_factor)
 
     # number of training cycles
-    training_cycles = 100
+    epochs = 100
 
     # train the neural network
-    for cyclewi in range(training_cycles):
-        for n in X:
-            output = NN.train(X, y)
-
-    output = NN.denormalise_data(output, normalising_factor)
-    prices = pd.DataFrame(output.T)
-
-    # [price yesterday, current price] for each day in range
-    inputs = [[df[i-1], df[i]] for i in range(100, 150)]
-
-    # Normalize data
-    inputs = NN.normalise_data(inputs, normalising_factor)
-
-    # test the network with unseen data
-    test = NN.test(inputs)
+    for epoch in range(epochs):
+        for prices in train_inputs:
+            train_outputs = NN.train(train_inputs, train_targets)
 
     # de-Normalize data
-    inputs = NN.denormalise_data(inputs, normalising_factor)
-    test = NN.denormalise_data(test, normalising_factor)
+    train_outputs = NN.denormalise_data(train_outputs, normalising_factor)
+    prices = pd.DataFrame(train_outputs.T)
+
+    # Normalize data
+    test_inputs = NN.normalise_data(test_inputs, normalising_factor)
+
+    # test the network with unseen data
+    test_outputs = NN.test(test_inputs)
+
+    # de-Normalize data
+    test_inputs = NN.denormalise_data(test_inputs, normalising_factor)
+    test_outputs = NN.denormalise_data(test_outputs, normalising_factor)
 
     # transplose test results
-    test = test.T
+    test_outputs = test_outputs.T
 
-    return df, prices, pd.DataFrame(test)
+    # return original stock data, training output, testing output
+    return df, prices, pd.DataFrame(test_outputs)
 
 
 def get_stock_data(ticker, start=[2019, 1, 1], end=[2019, 12, 31], json=True):
