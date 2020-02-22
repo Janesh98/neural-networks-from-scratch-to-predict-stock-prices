@@ -1,9 +1,30 @@
+// ticker is name of a stock symbol
+let ticker = "";
+
 $(document).ready(() => {
+
+    $('#searchForm').on('submit', (e) => {
+        let stock  = $('#searchText').val();
+        ticker = stock;
+        console.log(stock);
+        e.preventDefault();
+
+        // POST
+        fetch("/hello", {
+
+            method: "POST",
+            body: JSON.stringify({
+                "stock": stock
+            })
+        }).then(function (response) {
+            // get response from flask
+            let s = response.text();
+            console.log(s);
+            return s;
+        })
+    });
+
     $('#test').on("click", (e) => {
-        //let input  = $('#searchText').val();
-        //search(input);
-        //e.preventDefault();
-        console.log("hi");
         $.get("/hello", function(data) {
             console.log(data);
             let train = {
@@ -24,22 +45,6 @@ $(document).ready(() => {
         })
     });
 });
-
-// POST
-fetch("/hello", {
-
-    // Specify the method
-    method: "POST",
-
-    // A JSON payload
-    body: JSON.stringify({
-        "action": 1
-    })
-}).then(function (response) { // At this point, Flask has printed our JSON
-    let s = response.text();
-    console.log(s);
-    return s;
-})
 
 $.get("/getpythondata", function(data) {
     data = $.parseJSON(data);

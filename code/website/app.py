@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import pandas as pd
 import numpy as np
-import json
 import pandas_datareader.data as web
 import datetime as dt
 from os import listdir
@@ -15,9 +14,9 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 # prevent caching so website can be updated dynamically
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-def predict():
+def predict(stock="TSLA"):
     # returns pandas dataframe
-    df = get_stock_data("TSLA", json=False)
+    df = get_stock_data(stock, json=False)
     print(df)
 
     # X = (adjclose for 2 days ago, adjclose for previous day)
@@ -28,9 +27,7 @@ def predict():
     X = np.array(X, dtype=float)
     y = np.array(y, dtype=float)
 
-
     assert len(X) == len(y)
-    print(len(X), len(y))
 
     # Normalize
     X = X/1000
@@ -130,7 +127,8 @@ def hello():
     if request.method == 'POST':
         print('Incoming..')
         # convert to JSON
-        print(request.get_json(force=True))
+        stock = request.get_json(force=True)["stock"]
+        print(stock)
         return 'OK', 200
 
     # GET request
