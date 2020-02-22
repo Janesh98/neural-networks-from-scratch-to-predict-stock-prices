@@ -15,24 +15,6 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 def predict(stock, start, end):
-    # returns pandas dataframe
-    df = get_stock_data(stock, start, end, json=False)
-    print(df)
-
-    # X = (adjclose for 2 days ago, adjclose for previous day)
-    # y = actual adjclose for current day
-    X = [[df[i-2], df[i-1]] for i in range(len(df[:102])) if i >= 2]
-    y = [[i] for i in df[2:102]]
-
-    X = np.array(X, dtype=float)
-    y = np.array(y, dtype=float)
-
-    assert len(X) == len(y)
-
-    # Normalize
-    X = X/1000
-    y = y/1000 #make y less than 1
-
     input_nodes = 2
     hidden_nodes = 3
     output_nodes = 1
@@ -42,44 +24,43 @@ def predict(stock, start, end):
     # create neural network
     NN = NeuralNetwork(input_nodes,hidden_nodes,output_nodes, learning_rate)
 
+    df = get_stock_data(stock, start, end, json=False)
+
+    # X = (adjclose for 2 days ago, adjclose for previous day)
+    # y = actual adjclose for current day
+    X = [[df[i-1], df[i]] for i in range(len(df[:101])) if i >= 1]
+    y = [[df[i]] for i in range(len(df)) if i > 1 and i <= 101]
+
+    normalising_factor = NN.normalise_factor(X)
+
+    X = NN.normalise_data(X, normalising_factor)
+    y = NN.normalise_data(y, normalising_factor)
+
+    assert len(X) == len(y)
+
     # number of training cycles
-    epochs = 100
+    training_cycles = 100
 
     # train the neural network
-    for e in range(epochs):
+    for cyclewi in range(training_cycles):
         for n in X:
             output = NN.train(X, y)
 
-    # de-Normalize
-    output *= 1000
-    y *= 1000
+    output = NN.denormalise_data(output, normalising_factor)
+    prices = pd.DataFrame(output.T)
 
-    # transpose
-    output = output.T
+    # [price yesterday, current price] for each day in range
+    inputs = [[df[i-1], df[i]] for i in range(100, 150)]
 
-    # change data type so it can be plotted
-    prices = pd.DataFrame(output)
-
-    #print("\nTraining output:\n", output)
-
-    # [price 2 days ago, price yesterday] for each day in range
-    input = [[df[i-2], df[i-1]] for i in range(102, 152)]
-    test_target = [[i] for i in df[102:152]]
-
-    assert len(input) == len(test_target)
-
-    input = np.array(input, dtype=float)
-    test_target = np.array(test_target, dtype=float)
-
-    # Normalize
-    input = input/1000
+    # Normalize data
+    inputs = NN.normalise_data(inputs, normalising_factor)
 
     # test the network with unseen data
-    test = NN.test(input)
+    test = NN.test(inputs)
 
     # de-Normalize data
-    input *= 1000
-    test *= 1000
+    inputs = NN.denormalise_data(inputs, normalising_factor)
+    test = NN.denormalise_data(test, normalising_factor)
 
     # transplose test results
     test = test.T
