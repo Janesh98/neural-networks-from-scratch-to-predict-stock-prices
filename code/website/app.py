@@ -42,7 +42,7 @@ def shift_date(date, shift=4):
     new_date = dt.date(*date) - dt.timedelta(days=shift)
     new_date = new_date.strftime("%Y/%m/%d")
     new_date = [int(s) for s in new_date.split("/")]
-    print(date, new_date)
+    #print(date, new_date)
     return new_date
 
 def predict(stock, start, end):
@@ -94,7 +94,7 @@ def predict(stock, start, end):
     test_outputs = test_outputs.T
 
     # return original stock data, training output, testing output
-    return df, prices, pd.DataFrame(test_outputs)
+    return df[4:], prices, pd.DataFrame(test_outputs)
 
 
 def get_stock_data(ticker, start=[2019, 1, 1], end=[2019, 12, 31], json=True):
@@ -128,7 +128,6 @@ def get_python_data():
 def hello():
     # POST request
     if request.method == 'POST':
-        print('Incoming..')
         # convert to JSON
         data = request.get_json(force=True)
         stock = data["stock"].upper()
