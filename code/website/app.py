@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import pandas_datareader.data as web
 import datetime as dt
-from os import listdir
 import sys
 # to import from a parent directory
 sys.path.append('../')
@@ -17,7 +16,9 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 def train_test_split(df, split=0.75):
     # if split=0.75, splits data into 75% training, 25% test
     # provides targets for training and accuracy measurments
-    max_index = round((len(df) - 1) * split)
+    # -4 necessary as we take in 4 extra input from start date -4
+    # to ensure train_input + test_input = len(df)
+    max_index = round((len(df) - 1 - 4) * split)
 
     # adjusted close price [2 days ago, 1 day ago]
     train_inputs = [[df[i-2], df[i-1]] for i in range(2, max_index)]
@@ -32,8 +33,17 @@ def train_test_split(df, split=0.75):
     test_targets = [[i] for i in df[max_index + 2:]]
 
     assert len(test_inputs) == len(test_targets)
+    assert len(train_inputs) + len(test_inputs) == len(df) - 4
 
     return train_inputs, train_targets, test_inputs, test_targets
+
+def shift_date(date, shift=4):
+    # y/m/d
+    new_date = dt.date(*date) - dt.timedelta(days=shift)
+    new_date = new_date.strftime("%Y/%m/%d")
+    new_date = [int(s) for s in new_date.split("/")]
+    print(date, new_date)
+    return new_date
 
 def predict(stock, start, end):
     input_nodes = 2
@@ -43,6 +53,9 @@ def predict(stock, start, end):
 
     # create neural network
     NN = NeuralNetwork(input_nodes,hidden_nodes,output_nodes, learning_rate)
+
+    # shift start date -4 days for correct test/train i/o
+    start = shift_date(start)
 
     # get stock data
     df = get_stock_data(stock, start, end, json=False)
@@ -124,18 +137,18 @@ def hello():
 
         # convert strings to integers
         start, end = [int(s) for s in start], [int(s) for s in end]
-        print(stock, start, end)
 
+        # get original stock data, train and test results
         actual, train_res, test_res = predict(stock, start, end)
 
         # convert pandas dataframe to list
         actual = [i for i in actual]
         train_res, test_res = [i for i in train_res[0][:]], [i for i in test_res[0][:]]
 
-        # range of y values for plotting
+        # range of x values for plotting
         actualX = [i for i in range(len(actual))] 
         trainX = [i for i in range(len(train_res))] 
-        testX = [i for i in range(len(train_res) - 1, len(train_res) + len(test_res))]
+        testX = [i for i in range(len(train_res), len(train_res) + len(test_res))]
 
         return {"stock" : stock,
                 "actual" : actual,
