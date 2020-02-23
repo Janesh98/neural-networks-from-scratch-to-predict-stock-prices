@@ -149,6 +149,10 @@ def hello():
         trainX = [i for i in range(len(train_res))] 
         testX = [i for i in range(len(train_res), len(train_res) + len(test_res))]
 
+        # connect training and test lines in plot
+        test_res.insert(0, train_res[-1])
+        testX.insert(0, trainX[-1])
+
         return {"stock" : stock,
                 "actual" : actual,
                 "actualX" : actualX,

@@ -16,7 +16,7 @@ function handle_date(date, start=true) {
 $(document).ready(() => {
     $('#searchForm').on('submit', (e) => {
         let stock  = $('#searchText').val();
-        console.log(stock);
+        //console.log(stock);
         e.preventDefault();
 
         // POST
@@ -81,8 +81,8 @@ function plot(data, title="Stock Prediction", convert=true) {
           automargin : true,
         },
     };
-    console.log("plotting");
-    console.log(data);
+    //console.log("plotting");
+    //console.log(data);
     if (convert) {
         data = convertData(data);
     }
