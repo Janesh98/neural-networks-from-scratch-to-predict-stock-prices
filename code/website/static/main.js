@@ -1,5 +1,9 @@
+// default dates
 let dates = {"start" : "2019-01-01",
              "end" : "2019-12-31"};
+
+// default neural network model for prediction
+let model_selection = {"model" : "ff"};
 
 function handle_date(date, start=true) {
     // date is string in format y-m-d
@@ -10,30 +14,45 @@ function handle_date(date, start=true) {
     else {
         dates["end"] = date;
     }
-    console.log(dates);
+}
+
+function select_model() {
+    $('#ff').on('click', (e) => {
+        model_selection["model"] = "ff";
+    });
+
+    $('#rnn').on('click', (e) => {
+        model_selection["model"] = "rnn";
+    });
+
+    $('#lstm').on('click', (e) => {
+        model_selection["model"] = "lstm";
+    });
 }
 
 $(document).ready(() => {
+
+    select_model();
+
     $('#searchForm').on('submit', (e) => {
         let stock  = $('#searchText').val();
-        //console.log(stock);
         e.preventDefault();
 
         // POST
-        fetch("/hello", {
+        fetch("/postjsdata", {
             method: "POST",
             body: JSON.stringify({
                 "stock": stock,
                 "startDate" : dates["start"],
-                "endDate" : dates["end"]
+                "endDate" : dates["end"],
+                "model" : model_selection["model"]
             })
         }).then(function (response) {
-            // get response from flask
+            // get results from flask
             return response.json()
 
         }).then(function (data) {
             // plot new data
-            console.log(data);
             let title = data.stock;
 
             let actual = {
@@ -57,7 +76,7 @@ $(document).ready(() => {
                 mode : "lines"
             };
 
-            plot([actual, train, test], title, convert = false);
+            plot([actual, train, test], title, convert=false);
 
         })
     });
@@ -81,8 +100,6 @@ function plot(data, title="Stock Prediction", convert=true) {
           automargin : true,
         },
     };
-    //console.log("plotting");
-    //console.log(data);
     if (convert) {
         data = convertData(data);
     }

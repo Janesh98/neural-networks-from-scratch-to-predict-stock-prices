@@ -45,14 +45,19 @@ def shift_date(date, shift=4):
     #print(date, new_date)
     return new_date
 
-def predict(stock, start, end):
-    input_nodes = 2
-    hidden_nodes = 3
-    output_nodes = 1
-    learning_rate = 0.3
+def create_nn(model):
+    # create nn the user selected
+    if model == "ff":
+        return NeuralNetwork()
+    # TODO update nn created below when finished
+    if model == "rnn":
+        return NeuralNetwork()
+    else:
+        return NeuralNetwork()
 
+def predict(stock, start, end, model):
     # create neural network
-    NN = NeuralNetwork(input_nodes,hidden_nodes,output_nodes, learning_rate)
+    NN = create_nn(model)
 
     # shift start date -4 days for correct test/train i/o
     start = shift_date(start)
@@ -124,8 +129,8 @@ def index():
 def get_python_data():
     return get_stock_data("TSLA")
 
-@app.route('/hello', methods=['POST'])
-def hello():
+@app.route('/postjsdata', methods=['POST'])
+def post_js_data():
     # POST request
     if request.method == 'POST':
         # convert to JSON
@@ -133,12 +138,13 @@ def hello():
         stock = data["stock"].upper()
         start = data["startDate"].split("-")
         end = data["endDate"].split("-")
+        model = data["model"]
 
         # convert strings to integers
         start, end = [int(s) for s in start], [int(s) for s in end]
 
         # get original stock data, train and test results
-        actual, train_res, test_res = predict(stock, start, end)
+        actual, train_res, test_res = predict(stock, start, end, model)
 
         # convert pandas dataframe to list
         actual = [i for i in actual]

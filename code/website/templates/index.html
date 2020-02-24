@@ -18,10 +18,11 @@
               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Neural Network
               </a>
-              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <a class="dropdown-item" href="#">Feed Forward</a>
-                <a class="dropdown-item" href="#">RNN</a>
-                <a class="dropdown-item" href="#">LSTM</a>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                <button id="ff" class="dropdown-item" type="button">Feed Forward</button>
+                <button id="rnn" class="dropdown-item" type="button">RNN</button>
+                <button id="lstm" class="dropdown-item" type="button">LSTM</button>
+              </div>
             </li>
           </ul>
 
@@ -36,7 +37,7 @@
 
           <form id="searchForm" class="form-inline my-2 my-lg-0">
             <input id="searchText" class="form-control mr-sm-2" type="search" placeholder="Enter stock e.g 'TSLA'" aria-label="Enter stock e.g 'TSLA'">
-            <button id="test" class="btn btn-outline-success my-2 my-sm-0" type="submit">Predict</button>
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Predict</button>
           </form>
         </div>
       </nav>
