@@ -63,7 +63,10 @@ def predict(stock, start, end, model):
     start = shift_date(start)
 
     # get stock data
-    df = get_stock_data(stock, start, end, json=False)
+    try:
+        df = get_stock_data(stock, start, end, json=False)
+    except:
+        return None
 
     # split data into training and testing
     train_inputs, train_targets, test_inputs, test_targets = train_test_split(df)
@@ -108,7 +111,10 @@ def get_stock_data(ticker, start=[2019, 1, 1], end=[2019, 12, 31], json=True):
     end = dt.datetime(*end)
 
     # download csv from yahoo finance
-    df = web.DataReader(ticker, 'yahoo', start, end)
+    try:
+        df = web.DataReader(ticker, 'yahoo', start, end)
+    except:
+        return None
     # extract adjusted close column
     df = df["Adj Close"]
     # remove Date column
@@ -143,8 +149,11 @@ def post_js_data():
         # convert strings to integers
         start, end = [int(s) for s in start], [int(s) for s in end]
 
-        # get original stock data, train and test results
-        actual, train_res, test_res = predict(stock, start, end, model)
+        try:
+            # get original stock data, train and test results
+            actual, train_res, test_res = predict(stock, start, end, model)
+        except:
+            return "error", 404
 
         # convert pandas dataframe to list
         actual = [i for i in actual]

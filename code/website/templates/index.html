@@ -65,7 +65,7 @@
         $('input[name="start"]').daterangepicker({
           singleDatePicker: true,
           showDropdowns: true,
-          minYear: 1901,
+          minYear: 2015,
           maxYear: parseInt(moment().format('YYYY'),10)
         }, function(start, end, label) {
           var years = moment().diff(start, 'years');
@@ -78,7 +78,7 @@
         $('input[name="end"]').daterangepicker({
           singleDatePicker: true,
           showDropdowns: true,
-          minYear: 1901,
+          minYear: 2015,
           maxYear: parseInt(moment().format('YYYY'),10)
         }, function(start, end, label) {
           var years = moment().diff(start, 'years');

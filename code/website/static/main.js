@@ -78,7 +78,9 @@ $(document).ready(() => {
 
             plot([actual, train, test], title, convert=false);
 
-        })
+        }).catch(function(e) {
+            alert("please ensure a valid stock and date range is selected.");
+        });
     });
 });
 
