@@ -53,7 +53,7 @@ $(document).ready(() => {
 
         }).then(function (data) {
             // plot new data
-            let title = data.stock;
+            let title = data.stock + " - Accuracy: " + data.accuracy + " %";
 
             let actual = {
                 x : data.actualX,

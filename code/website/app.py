@@ -6,7 +6,7 @@ import datetime as dt
 import sys
 # to import from a parent directory
 sys.path.append('../')
-from NeuralNetwork import NeuralNetwork
+from NeuralNetwork import NeuralNetwork, mape
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
@@ -101,8 +101,12 @@ def predict(stock, start, end, model):
     # transplose test results
     test_outputs = test_outputs.T
 
-    # return original stock data, training output, testing output
-    return df[4:], prices, pd.DataFrame(test_outputs)
+    # accuracy of test prediction
+    # rounds accuracy to 2 decimal places
+    accuracy = round(100 - mape(test_targets, test_outputs), 2)
+
+    # return original stock data, training output, testing output, test prediction accuracy
+    return df[4:], prices, pd.DataFrame(test_outputs), str(accuracy)
 
 
 def get_stock_data(ticker, start=[2019, 1, 1], end=[2019, 12, 31], json=True):
@@ -151,7 +155,7 @@ def post_js_data():
 
         try:
             # get original stock data, train and test results
-            actual, train_res, test_res = predict(stock, start, end, model)
+            actual, train_res, test_res, accuracy = predict(stock, start, end, model)
         except:
             return "error", 404
 
@@ -174,7 +178,8 @@ def post_js_data():
                 "train" : train_res,
                 "trainX" : trainX, 
                 "test" : test_res,
-                "testX" : testX}
+                "testX" : testX,
+                "accuracy" : accuracy}
         
 if __name__ == '__main__':
     app.run(host = "0.0.0.0", port = 3000, debug=True)
