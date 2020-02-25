@@ -17,7 +17,8 @@ def train_test_split(df, split=0.75):
     # if split=0.75, splits data into 75% training, 25% test
     # provides targets for training and accuracy measurments
     # -4 necessary as we take in 4 extra input from start date -4
-    # to ensure train_input + test_input = len(df)
+    # to ensure train_input + test_input = len(df) -4
+    # meaning the output data is the same size as the original
     max_index = round((len(df) - 1 - 4) * split)
 
     # adjusted close price [2 days ago, 1 day ago]

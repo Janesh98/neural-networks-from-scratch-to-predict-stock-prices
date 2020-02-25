@@ -30,9 +30,25 @@ function select_model() {
     });
 }
 
+// shows a spinner icon when predict button is pressed
+function spinner(hide=false) {
+    let spinner = $("#predict").find('#spinner');
+
+    if (hide) {
+    spinner.addClass('d-none');
+    }
+
+    $('button').on('click', e => {
+        spinner.removeClass('d-none');
+    });
+}
+
 $(document).ready(() => {
 
     select_model();
+
+    // show spinner
+    spinner();
 
     $('#searchForm').on('submit', (e) => {
         let stock  = $('#searchText').val();
@@ -76,9 +92,14 @@ $(document).ready(() => {
                 mode : "lines"
             };
 
+            // hide spinner
+            spinner(hide=true);
+
             plot([actual, train, test], title, convert=false);
 
         }).catch(function(e) {
+            // hide spinner
+            spinner(hide=true);
             alert("please ensure a valid stock and date range is selected.");
         });
     });

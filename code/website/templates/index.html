@@ -2,7 +2,7 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Stock Predictor</title> 
+    <title>Stock Prediction</title> 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 
@@ -36,10 +36,12 @@
               <input type="text" class="form-control mr-sm-2" name="end" value="12/31/2019" />
             </div>
           </div>
-
           <form id="searchForm" class="form-inline my-2 my-lg-0">
             <input id="searchText" class="form-control mr-sm-2" type="search" placeholder="Enter stock e.g 'TSLA'" aria-label="Enter stock e.g 'TSLA'">
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Predict</button>
+            <button id="predict" class="btn btn-outline-success my-2 my-sm-0" type="submit">
+              <span id="spinner" class="d-none spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              Predict
+            </button>
           </form>
         </div>
       </nav>
