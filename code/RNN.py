@@ -175,7 +175,7 @@ def main():
     target = target/1000 #make y less than 1
 
     # create neural network
-    NN = NeuralNetwork()
+    NN = RNN()
 
     # number of training cycles
     training_cycles = 100
