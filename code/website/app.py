@@ -7,11 +7,109 @@ import sys
 # to import from a parent directory
 sys.path.append('../')
 from NeuralNetwork import NeuralNetwork, mape
+from RNN import RNN
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 # prevent caching so website can be updated dynamically
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
+def rnn_predict(stock, start, end):
+    # get stock data
+    try:
+        df = get_stock_data(stock, start, end, json=False)
+    except:
+        e = sys.exc_info()
+        print(e)
+        print("rnn predict fail")
+        return e
+
+    print("got stock data")
+
+    # X = (adjclose for 2 days ago, adjclose for previous day)
+    # y = actual adjclose for current day
+    training_input_1 = [[df[i-4], df[i-3]] for i in range(len(df[:104])) if i >= 4]
+    training_input_2 = [[df[i-2]] for i in range(len(df[:104])) if i >= 4] 
+    training_input_3 = [[df[i - 1]] for i in range(len(df[:104])) if i >= 4]
+    target = [[i] for i in df[4:104]]
+
+    training_input_1 = np.array(training_input_1, dtype=float)
+    training_input_2 = np.array(training_input_2, dtype=float)
+    training_input_3 = np.array(training_input_3, dtype=float)
+    target = np.array(target, dtype=float)
+
+    assert len(training_input_1) == len(training_input_2) == len(training_input_3) == len(target)
+
+    print("I/o")
+
+    # Normalize
+    training_input_1 = training_input_1/1000
+    training_input_2 = training_input_2/1000
+    training_input_3 = training_input_3/1000
+    target = target/1000 #make y less than 1
+
+    # create neural network
+    NN = RNN()
+
+    print("created nn")
+    # number of training cycles
+    training_cycles = 200
+
+
+    # train the neural network
+    for cycle in range(training_cycles):
+        for n in training_input_1:
+            output = NN.train(training_input_1, training_input_2, training_input_3, target)
+
+    print("training")
+
+    # de-Normalize
+    output *= 1000
+    target *= 1000
+
+    # transpose
+    output = output.T
+
+    # change data type so it can be plotted
+    prices = pd.DataFrame(output)
+
+    # [price 2 days ago, price yesterday] for each day in range
+    testing_input_1 = [[df[i-4], df[i-3]] for i in range(104, 154)]
+    testing_input_2 = [[df[i-2]] for i in range(104, 154)] 
+    testing_input_3 = [[df[i-1]] for i in range(104, 154)]
+    test_target = [[i] for i in df[104:154]]
+
+    assert len(testing_input_1) == len(testing_input_2) == len(testing_input_3) ==len(test_target)
+
+    testing_input_1 = np.array(testing_input_1, dtype=float)
+    testing_input_2 = np.array(testing_input_2, dtype=float)
+    testing_input_3 = np.array(testing_input_3, dtype=float)
+    test_target = np.array(test_target, dtype=float)
+
+    # Normalize
+    testing_input_1 = testing_input_1/1000
+    testing_input_2 = testing_input_2/1000
+    testing_input_3 = testing_input_3/1000
+
+    # test the network with unseen data
+    test = NN.test(testing_input_1, testing_input_2, testing_input_3)
+
+    print("tested")
+
+    # de-Normalize data
+    #input *= 1000
+    test *= 1000
+
+    # transplose test results
+    test = test.T
+
+    # accuracy
+    accuracy = 100 - mape(test_target, test)
+    print(accuracy)
+
+    print("returning")
+    print(df, prices, pd.DataFrame(test), str(round(accuracy, 2)), sep="\n")
+    return df, prices, pd.DataFrame(test), str(round(accuracy, 2))
 
 def train_test_split(df, split=0.75):
     # if split=0.75, splits data into 75% training, 25% test
@@ -46,20 +144,20 @@ def shift_date(date, shift=4):
     #print(date, new_date)
     return new_date
 
-def create_nn(model):
+def handle_nn(stock, start, end, model):
     # create nn the user selected
     if model == "ff":
-        return NeuralNetwork()
-    # TODO update nn created below when finished
+        NN = NeuralNetwork()
+        return predict(stock, start, end, NN)
     if model == "rnn":
-        return NeuralNetwork()
+        print("why u no work ahhhh")
+        return rnn_predict(stock, start, end)
     else:
-        return NeuralNetwork()
+        # TODO update nn created below when finished
+        NN = NeuralNetwork()
+        return predict(stock, start, end, NN)
 
-def predict(stock, start, end, model):
-    # create neural network
-    NN = create_nn(model)
-
+def predict(stock, start, end, NN):
     # shift start date -4 days for correct test/train i/o
     start = shift_date(start)
 
@@ -67,7 +165,10 @@ def predict(stock, start, end, model):
     try:
         df = get_stock_data(stock, start, end, json=False)
     except:
-        return None
+        e = sys.exc_info()
+        print(e)
+        print("predict fail")
+        return e
 
     # split data into training and testing
     train_inputs, train_targets, test_inputs, test_targets = train_test_split(df)
@@ -119,7 +220,11 @@ def get_stock_data(ticker, start=[2019, 1, 1], end=[2019, 12, 31], json=True):
     try:
         df = web.DataReader(ticker, 'yahoo', start, end)
     except:
-        return None
+        e = sys.exc_info()
+        print(e)
+        print("get data fail")
+        return e
+
     # extract adjusted close column
     df = df["Adj Close"]
     # remove Date column
@@ -156,8 +261,12 @@ def post_js_data():
 
         try:
             # get original stock data, train and test results
-            actual, train_res, test_res, accuracy = predict(stock, start, end, model)
+            actual, train_res, test_res, accuracy = handle_nn(stock, start, end, model)
+            print(accuracy)
         except:
+            e = sys.exc_info()
+            print(e)
+            print("handle_nn fail")
             return "error", 404
 
         # convert pandas dataframe to list

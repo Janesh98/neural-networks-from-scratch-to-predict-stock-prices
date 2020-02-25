@@ -38,7 +38,7 @@ function spinner(hide=false) {
     spinner.addClass('d-none');
     }
 
-    $('button').on('click', e => {
+    $('#predict').on('click', e => {
         spinner.removeClass('d-none');
     });
 }
