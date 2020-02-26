@@ -6,7 +6,7 @@ import math
 import pandas as pd
 import sys
 
-class NeuralNetwork:
+class RNN:
 
     def __init__(self, input_1 = 2, input_2 = 1, input_3 = 1, hidden_layer_1 = 2, hidden_layer_2 = 3, output = 1, learning_rate = 0.3):
         # set number of nodes in each input, hidden, output layer
@@ -122,11 +122,6 @@ class NeuralNetwork:
     def denormalise_data(self, data, factor):
         return data * factor
 
-
-def mape(actual, prediction): 
-    # mean absolute percentage error (MAPE)
-    return np.mean(np.abs((actual - prediction) / actual)) * 100
-
 def plot(actual, prediction):
     plt.plot([0 + i for i in range(0, 150)], actual, "r")
     plt.plot(prediction[:100], "b")
@@ -180,7 +175,7 @@ def main():
     target = target/1000 #make y less than 1
 
     # create neural network
-    NN = NeuralNetwork()
+    NN = RNN()
 
     # number of training cycles
     training_cycles = 100
