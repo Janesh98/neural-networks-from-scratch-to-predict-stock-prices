@@ -8,7 +8,7 @@ import sys
 
 class NeuralNetwork:
 
-    def __init__(self, input = 2, lstm_cell_weights = 2, output = 1, learning_rate = 0.3):
+    def __init__(self, input = 2, lstm_cell_weights = 2, output = 1, learning_rate = 0.34):
         # set number of nodes in each input, hidden, output layer
         self.input_nodes = input
         self.lstm_cell_weights = lstm_cell_weights
@@ -246,7 +246,7 @@ def main():
     print("Test RMSE Accuracy: {:.4f}%".format(100 - rmse(test_target, test)))
     print("Test MAPE Accuracy: {:.4f}%".format(100 - mape(test_target, test)))
 
-    if (100 - mape(test_target, test)) >= 80.00 and (100 - mape(target, output)) >= 80.00:
+    if (100 - mape(test_target, test)) >= 85.00 and (100 - mape(target, output)) >= 85.00:
         # plotting training and test on same graph
         graph_fix = [[0]] * 100
         graph_fix = np.array(graph_fix, dtype=float)
