@@ -100,9 +100,9 @@ class NeuralNetwork:
         self.who += self.learn * np.dot((output_error * final_output * (1.0 - final_output)), h_t.T)
 
         # update the weights between input and hidden
-        self.wff += self.learn * np.dot((hidden_error * h_t * (1.0 - h_t)), (training_input_1.T * self.cell_state.T))
-        self.wfi += self.learn * np.dot((hidden_error * h_t * (1.0 - h_t)), (training_input_2.T * self.cell_state.T))
-        self.wfo += self.learn * np.dot((hidden_error * h_t * (1.0 - h_t)), (training_input_3.T * self.cell_state.T))
+        self.wff += self.learn * np.dot((hidden_error * h_t * (1.0 - h_t)), training_input_1.T)
+        self.wfi += self.learn * np.dot((hidden_error * h_t * (1.0 - h_t)), training_input_2.T)
+        self.wfo += self.learn * np.dot((hidden_error * h_t * (1.0 - h_t)), training_input_3.T)
 
 
     def train(self, training_input_1, training_input_2, training_input_3, target):
@@ -246,7 +246,7 @@ def main():
     print("Test RMSE Accuracy: {:.4f}%".format(100 - rmse(test_target, test)))
     print("Test MAPE Accuracy: {:.4f}%".format(100 - mape(test_target, test)))
 
-    if (100 - mape(test_target, test)) >= 85.00 and (100 - mape(target, output)) >= 85.00:
+    if (100 - mape(test_target, test)) >= 80.00 and (100 - mape(target, output)) >= 80.00:
         # plotting training and test on same graph
         graph_fix = [[0]] * 100
         graph_fix = np.array(graph_fix, dtype=float)
