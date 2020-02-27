@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from stock import get_stock_data
-from sklearn.metrics import mean_squared_error
-import math
 import pandas as pd
 import sys
 
@@ -58,7 +56,6 @@ class NeuralNetwork:
         # update the weights between input and hidden
         self.wih += self.learn * np.dot((hidden_error * hidden_output * (1.0 - hidden_output)), input.T)
         
-        
     def train(self, input, target):
         # convert lists to 2d arrays
         input = np.array(input, ndmin=2).T
@@ -79,27 +76,22 @@ class NeuralNetwork:
 
         return final_output
 
-    def normalise_factor(self, data):
-        biggest = max(data)
-        if len(biggest) > 1:
-            biggest = max(biggest)
-        else:
-            biggest = biggest[0]
+def normalise_factor(data):
+    biggest = max(data)
+    if len(biggest) > 1:
+        biggest = max(biggest)
+    else:
+        biggest = biggest[0]
 
-        head = int(biggest)
-        return 10 ** len(str(head))
+    head = int(biggest)
+    return 10 ** len(str(head))
 
-    def normalise_data(self, data, factor):
-        data = np.array(data, dtype=float)
-        return data/factor
+def normalise_data(data, factor):
+    data = np.array(data, dtype=float)
+    return data/factor
 
-    def denormalise_data(self, data, factor):
-        return data * factor
-
-
-def mape(actual, prediction): 
-    # mean absolute percentage error (MAPE)
-    return np.mean(np.abs((actual - prediction) / actual)) * 100
+def denormalise_data(data, factor):
+    return data * factor
 
 def plot(actual, prediction):
     plt.plot([0 + i for i in range(0, 150)], actual, "r")

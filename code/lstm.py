@@ -6,7 +6,7 @@ import math
 import pandas as pd
 import sys
 
-class NeuralNetwork:
+class LSTM:
 
     def __init__(self, input = 2, lstm_cell_weights = 2, output = 1, learning_rate = 0.34):
         # set number of nodes in each input, hidden, output layer
@@ -179,8 +179,7 @@ def main():
     target = target/1000 
 
     # create neural network
-    NN = NeuralNetwork()
-
+    NN = LSTM()
 
     # number of training cycles
     training_cycles = 100
@@ -213,7 +212,6 @@ def main():
     testing_input_2 = [[df[i-4], df[i-3]] for i in range(106, 206)]
     testing_input_3 = [[df[i-2], df[i-1]] for i in range(106, 206)]
     test_target = [[i] for i in df[106:206]]
-
 
     assert len(testing_input_1) == len(testing_input_2) == len(testing_input_3) == len(test_target)
 

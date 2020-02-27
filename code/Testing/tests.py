@@ -4,14 +4,23 @@ import numpy as np
 # to import from a parent directory
 sys.path.append('../')
 from NeuralNetwork import NeuralNetwork, mse, rmse, mape
+from RNN import RNN
+from lstm import LSTM
 
 class MseTestCase(unittest.TestCase):
     def test_mse(self):
         # if both arrays are the same the mean squared error should = 0
         self.assertEqual(mse(np.arange(5), np.arange(5)), 0.0)
 
-class NeuralNetworkTestCase(unittest.TestCase):
+class NeuralNetworksTestCase(unittest.TestCase):
+    """ test to ensure each neural network can predict
+        a straight line with high accuracy """
+        
     def test_NeuralNetwork(self):
+        # create Neural Network
+        NN = NeuralNetwork()
+
+        # create training and testing inputs and targets
         train_input = [[100, 100] for i in range(100)]
         train_target = [[100] for i in range(100)]
 
@@ -21,11 +30,9 @@ class NeuralNetworkTestCase(unittest.TestCase):
         # normalize
         train_input = np.array(train_input) / 1000
         train_target = np.array(train_target) / 1000
+
         test_input = np.array(test_input) / 1000 
-
         test_target = np.array(test_target)       
-
-        NN = NeuralNetwork()
 
         # number of training cycles
         epochs = 100
@@ -35,17 +42,112 @@ class NeuralNetworkTestCase(unittest.TestCase):
             for p in train_input:
                 train_output = NN.train(train_input, train_target)
 
+        # test on unseen data
+        test_output = NN.test(test_input)
+
         # de-normalize
         train_output *= 1000
         train_target *= 1000
 
-        test_output = NN.test(test_input)
-
-        # de-normalize
         test_output *= 1000
 
+        # ensure network can predict a line with high accuracy
         self.assertGreaterEqual(100 - mape(train_target, train_output), 99.99)
-        self.assertGreaterEqual(100 - mape(test_target, test_output), 98.00)
+        self.assertGreaterEqual(100 - mape(test_target, test_output), 97.00)
+
+    def test_RNN(self):
+        # create recurrent neural network
+        NN = RNN()
+
+        # create training and testing inputs and targets
+        train_input_1 = [[100, 100] for i in range(100)]
+        train_target = [[100] for i in range(100)]
+        train_input_2 = train_target
+        train_input_3 = train_target
+
+        test_input_1 = [[101, 101] for i in range(100)]
+        test_target = [[101] for i in range(100)]
+        test_input_2 = test_target
+        test_input_3 = test_target
+
+        # normalize
+        train_input_1 = np.array(train_input_1) / 1000
+        train_target = np.array(train_target) / 1000
+        train_input_2 = train_target
+        train_input_3 = train_target
+
+        test_input_1 = np.array(test_input_1) / 1000
+        test_target = np.array(test_target) / 1000
+        test_input_2 = test_target
+        test_input_3 = test_target        
+
+        # number of training cycles
+        epochs = 100
+
+        # train the neural network
+        for e in range(epochs):
+            for p in train_input_1:
+                train_output = NN.train(train_input_1, train_input_2, train_input_3, train_target)
+
+        # test on unseen data
+        test_output = NN.test(test_input_1, test_input_2, test_input_3)
+
+        # de-normalize
+        train_output *= 1000
+        train_target *= 1000
+
+        test_output *= 1000
+        test_target *= 1000
+
+        self.assertGreaterEqual(100 - mape(train_target, train_output), 99.99)
+        self.assertGreaterEqual(100 - mape(test_target, test_output), 97.00)
+
+    def test_LSTM(self):
+        # create recurrent neural network
+        NN = LSTM()
+
+        # create training and testing inputs and targets
+        train_input_1 = [[100, 100] for i in range(100)]
+        train_input_2 = train_input_1
+        train_input_3 = train_input_1
+        train_target = [[100] for i in range(100)]
+
+        test_input_1 = [[101, 101] for i in range(100)]
+        test_input_2 = test_input_1
+        test_input_3 = test_input_1
+        test_target = [[101] for i in range(100)]
+
+        # normalize
+        train_input_1 = np.array(train_input_1) / 1000
+        train_input_2 = train_input_1
+        train_input_3 = train_input_1
+        train_target = np.array(train_target) / 1000
+
+        test_input_1 = np.array(test_input_1) / 1000
+        test_input_2 = test_input_1
+        test_input_3 = test_input_1       
+        test_target = np.array(test_target) / 1000
+
+        # number of training cycles
+        epochs = 100
+
+        # train the neural network
+        for e in range(epochs):
+            for p in train_input_1:
+                train_output = NN.train(train_input_1, train_input_2, train_input_3, train_target)
+
+        # test on unseen data
+        test_output = NN.test(test_input_1, test_input_2, test_input_3)
+
+        # de-normalize
+        train_output *= 1000
+        train_target *= 1000
+
+        test_output *= 1000
+        test_target *= 1000
+
+        self.assertGreaterEqual(100 - mape(train_target, train_output), 99.99)
+        self.assertGreaterEqual(100 - mape(test_target, test_output), 96.00)
 
 if __name__ == '__main__':
     unittest.main()
