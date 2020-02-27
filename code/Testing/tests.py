@@ -7,15 +7,25 @@ from NeuralNetwork import NeuralNetwork, mse, rmse, mape
 from RNN import RNN
 from lstm import LSTM
 
-class MseTestCase(unittest.TestCase):
+class ErrorTestCase(unittest.TestCase):
+    """ if both arrays are the same the error should be 0 """
+
     def test_mse(self):
-        # if both arrays are the same the mean squared error should = 0
-        self.assertEqual(mse(np.arange(5), np.arange(5)), 0.0)
+        test = np.array([10, 10, 10, 10, 10])
+        self.assertEqual(mse(test, test), 0.0)
+
+    def test_rmse(self):
+        test = np.array([10, 10, 10, 10, 10])
+        self.assertEqual(rmse(test, test), 0.0)
+
+    def test_mape(self):
+        test = np.array([10, 10, 10, 10, 10])
+        self.assertEqual(mape(test, test), 0.0)    
 
 class NeuralNetworksTestCase(unittest.TestCase):
     """ test to ensure each neural network can predict
         a straight line with high accuracy """
-        
+
     def test_NeuralNetwork(self):
         # create Neural Network
         NN = NeuralNetwork()
@@ -53,7 +63,7 @@ class NeuralNetworksTestCase(unittest.TestCase):
 
         # ensure network can predict a line with high accuracy
         self.assertGreaterEqual(100 - mape(train_target, train_output), 99.99)
-        self.assertGreaterEqual(100 - mape(test_target, test_output), 97.00)
+        self.assertGreaterEqual(100 - mape(test_target, test_output), 96.00)
 
     def test_RNN(self):
         # create recurrent neural network
@@ -100,7 +110,7 @@ class NeuralNetworksTestCase(unittest.TestCase):
         test_target *= 1000
 
         self.assertGreaterEqual(100 - mape(train_target, train_output), 99.99)
-        self.assertGreaterEqual(100 - mape(test_target, test_output), 97.00)
+        self.assertGreaterEqual(100 - mape(test_target, test_output), 96.00)
 
     def test_LSTM(self):
         # create recurrent neural network
