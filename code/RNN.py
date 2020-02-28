@@ -79,6 +79,10 @@ class RNN:
         
         # update the weights between input and hidden
         self.wih1 += self.learn * np.dot((hidden_error_2[1:] * hidden_output_1[1:] * (1.0 - hidden_output_1[1:])), training_input_1.T)
+
+        # clip to prevent/reduce exploding/vanishing gradient problem
+        for w in [self.wh2o, self.wh1h2, self.wih1]:
+            np.clip(w, -5, 5, out=w)
         
         
     def train(self, training_input_1, training_input_2, training_input_3, target):
