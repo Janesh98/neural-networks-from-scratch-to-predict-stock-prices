@@ -66,6 +66,10 @@ class LSTM:
 
         
     def forward(self, training_input_1, training_input_2, training_input_3):
+        self.cell_state = [[1, 1] for i in range(len(training_input_1[0]))]
+        self.cell_state = np.array(self.cell_state, dtype=float)
+        self.cell_state = np.array(self.cell_state, ndmin=2).T
+
         # Pass input though lstm cells
         self.forget_gate(training_input_1)
         self.input_gate(training_input_1)
@@ -141,9 +145,9 @@ def rmse(actual, prediction):
     return np.sqrt(((actual - prediction) ** 2).mean())
 
 def plot(actual, prediction):
-    plt.plot([0 + i for i in range(0, 200)], actual, "r")
+    plt.plot([0 + i for i in range(0, 150)], actual, "r")
     plt.plot(prediction[:200], "b")
-    plt.plot([99 + i for i in range(0, 101)], prediction[99:],  "g")
+    plt.plot([99 + i for i in range(0, 51)], prediction[99:],  "g")
     plt.xlabel("Days")
     plt.ylabel("Price")
     plt.title("Stock Prediction")
@@ -208,10 +212,10 @@ def main():
     print("Training MAPE Accuracy: {:.4f}%".format(100 - mape(target, output)))
 
     # [price 2 days ago, price yesterday] for each day in range
-    testing_input_1 = [[df[i-6], df[i-5]] for i in range(106, 206)]
-    testing_input_2 = [[df[i-4], df[i-3]] for i in range(106, 206)]
-    testing_input_3 = [[df[i-2], df[i-1]] for i in range(106, 206)]
-    test_target = [[i] for i in df[106:206]]
+    testing_input_1 = [[df[i-6], df[i-5]] for i in range(106, 156)]
+    testing_input_2 = [[df[i-4], df[i-3]] for i in range(106, 156)]
+    testing_input_3 = [[df[i-2], df[i-1]] for i in range(106, 156)]
+    test_target = [[i] for i in df[106:156]]
 
     assert len(testing_input_1) == len(testing_input_2) == len(testing_input_3) == len(test_target)
 
@@ -250,7 +254,7 @@ def main():
         graph_fix = np.array(graph_fix, dtype=float)
         fixed_test = np.concatenate((graph_fix, test))
         for_plot = np.concatenate((prices[:100], fixed_test[100:]))
-        plot(df[6:206], for_plot)
+        plot(df[6:156], for_plot)
 
     else:
         main()
