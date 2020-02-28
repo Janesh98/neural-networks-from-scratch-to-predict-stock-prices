@@ -76,22 +76,22 @@ class NeuralNetwork:
 
         return final_output
 
-def normalise_factor(data):
-    biggest = max(data)
-    if len(biggest) > 1:
-        biggest = max(biggest)
-    else:
-        biggest = biggest[0]
+    def normalise_factor(self, data):
+        biggest = max(data)
+        if len(biggest) > 1:
+            biggest = max(biggest)
+        else:
+            biggest = biggest[0]
 
-    head = int(biggest)
-    return 10 ** len(str(head))
+        head = int(biggest)
+        return 10 ** len(str(head))
 
-def normalise_data(data, factor):
-    data = np.array(data, dtype=float)
-    return data/factor
+    def normalise_data(self, data, factor):
+        data = np.array(data, dtype=float)
+        return data/factor
 
-def denormalise_data(data, factor):
-    return data * factor
+    def denormalise_data(self, data, factor):
+        return data * factor
 
 def plot(actual, prediction):
     plt.plot([0 + i for i in range(0, 150)], actual, "r")
