@@ -15,9 +15,9 @@ class RNN():
         # wih = weights from input(i) to hidden(h)
         # whh = weights from hidden(h) to hidden(h)
         # who = weights from hidden(h) to output(o)
-        self.wih = np.random.uniform(0, 1, (self.hidden_nodes, self.input_nodes))
-        self.whh = np.random.uniform(0, 1, (self.output_nodes, self.hidden_nodes))
-        self.who = np.random.uniform(0, 1, (self.hidden_nodes, self.hidden_nodes))
+        self.wih = np.random.uniform(0, 1, (self.hidden_nodes, self.input_nodes)) / 2
+        self.whh = np.random.uniform(0, 1, (self.output_nodes, self.hidden_nodes)) / 2
+        self.who = np.random.uniform(0, 1, (self.hidden_nodes, self.hidden_nodes)) / 2
 
         # learning rate
         self.learn = learning_rate
