@@ -19,16 +19,11 @@ class LSTM:
         # wfi = weights for input gate
         # wfo = weights for ouput gate
         # wfc = weights for candidate
-        self.wff = np.random.randn(self.input_nodes, self.lstm_cell_weights)
-        self.wfi = np.random.randn(self.input_nodes, self.lstm_cell_weights)
-        self.wfo = np.random.randn(self.input_nodes, self.lstm_cell_weights)
-        self.wfc = np.random.randn(self.input_nodes, self.lstm_cell_weights)
-        self.wff = self.wff.T
-        self.wfi = self.wfi.T
-        self.wfo = self.wfo.T
-        self.wfc = self.wfc.T
-        self.who = np.random.randn(2, 1)
-        self.who = self.who.T
+        self.wff = np.random.randn(self.input_nodes, self.lstm_cell_weights).T
+        self.wfi = np.random.randn(self.input_nodes, self.lstm_cell_weights).T
+        self.wfo = np.random.randn(self.input_nodes, self.lstm_cell_weights).T
+        self.wfc = np.random.randn(self.input_nodes, self.lstm_cell_weights).T
+        self.who = np.random.randn(2, 1).T
 
         self.cell_state = [[1, 1] for i in range(100)]
         self.cell_state = np.array(self.cell_state, dtype=float)
@@ -80,19 +75,16 @@ class LSTM:
         self.input_gate(training_input_1)
         h_t = self.output_gate(training_input_1)
 
-        out1_error = 0.5 * ((h_t - target)**2)
 
         self.forget_gate(training_input_2, h_t)
         self.input_gate(training_input_2, h_t)
         h_t = self.output_gate(training_input_2, h_t)
 
-        out2_error = 0.5 * ((h_t - target)**2)
 
         self.forget_gate(training_input_3, h_t)
         self.input_gate(training_input_3, h_t)
         h_t = self.output_gate(training_input_3, h_t)
 
-        out3_error = 0.5 * ((h_t - target)**2)
 
         final_input = np.dot(self.who, h_t)
 
@@ -169,7 +161,7 @@ def plot(actual, prediction):
 
 def main():    
     # returns pandas dataframe
-    df = get_stock_data("TSLA")
+    df = get_stock_data("FB")
     # extract only the adjusted close prices of the stock
     df = df['Adj Close']
 
@@ -261,16 +253,12 @@ def main():
     print("Test RMSE Accuracy: {:.4f}%".format(100 - rmse(test_target, test)))
     print("Test MAPE Accuracy: {:.4f}%".format(100 - mape(test_target, test)))
 
-    if (100 - mape(test_target, test)) >= 85.00 and (100 - mape(target, output)) >= 85.00:
-        # plotting training and test on same graph
-        graph_fix = [[0]] * 100
-        graph_fix = np.array(graph_fix, dtype=float)
-        fixed_test = np.concatenate((graph_fix, test))
-        for_plot = np.concatenate((prices[:100], fixed_test[100:]))
-        plot(df[6:156], for_plot)
-
-    else:
-        main()
+    # plotting training and test on same graph
+    graph_fix = [[0]] * 100
+    graph_fix = np.array(graph_fix, dtype=float)
+    fixed_test = np.concatenate((graph_fix, test))
+    for_plot = np.concatenate((prices[:100], fixed_test[100:]))
+    plot(df[6:156], for_plot)
 
 
 if __name__ == '__main__':
