@@ -18,12 +18,15 @@ class LSTM:
         # wff = weights for forget gate
         # wfi = weights for input gate
         # wfo = weights for ouput gate
+        # wfc = weights for candidate
         self.wff = np.random.randn(self.input_nodes, self.lstm_cell_weights)
         self.wfi = np.random.randn(self.input_nodes, self.lstm_cell_weights)
         self.wfo = np.random.randn(self.input_nodes, self.lstm_cell_weights)
+        self.wfc = np.random.randn(self.input_nodes, self.lstm_cell_weights)
         self.wff = self.wff.T
         self.wfi = self.wfi.T
         self.wfo = self.wfo.T
+        self.wfc = self.wfc.T
         self.who = np.random.randn(2, 1)
         self.who = self.who.T
 
@@ -40,7 +43,7 @@ class LSTM:
     
     # tanh activation function
     def tanh(self, x):
-        return np.tanh(x)
+        return 1 - np.square(np.tanh(x))
 
     def forget_gate(self, gate_input, h_t_1=1):
         gate_input = np.dot(self.wff, gate_input)
@@ -50,9 +53,11 @@ class LSTM:
 
 
     def input_gate(self, gate_input, h_t_1=1):
-        gate_input = np.dot(self.wfi, gate_input)
-        gate_input = h_t_1 * gate_input
-        gate_output = self.sigmoid(gate_input) * self.tanh(gate_input)
+        gate_input_1 = np.dot(self.wfi, gate_input)
+        gate_input_1 = h_t_1 * gate_input_1
+        gate_input_2 = np.dot(self.wfc, gate_input)
+        gate_input_2 = h_t_1 * gate_input_2
+        gate_output = self.sigmoid(gate_input_1) * self.tanh(gate_input_2)
         self.cell_state = self.cell_state + gate_output
 
 
@@ -65,7 +70,7 @@ class LSTM:
         return h_t_1
 
         
-    def forward(self, training_input_1, training_input_2, training_input_3):
+    def forward(self, training_input_1, training_input_2, training_input_3, target):
         self.cell_state = [[1, 1] for i in range(len(training_input_1[0]))]
         self.cell_state = np.array(self.cell_state, dtype=float)
         self.cell_state = np.array(self.cell_state, ndmin=2).T
@@ -75,15 +80,19 @@ class LSTM:
         self.input_gate(training_input_1)
         h_t = self.output_gate(training_input_1)
 
+        out1_error = 0.5 * ((h_t - target)**2)
 
         self.forget_gate(training_input_2, h_t)
         self.input_gate(training_input_2, h_t)
         h_t = self.output_gate(training_input_2, h_t)
 
+        out2_error = 0.5 * ((h_t - target)**2)
 
         self.forget_gate(training_input_3, h_t)
         self.input_gate(training_input_3, h_t)
         h_t = self.output_gate(training_input_3, h_t)
+
+        out3_error = 0.5 * ((h_t - target)**2)
 
         final_input = np.dot(self.who, h_t)
 
@@ -106,6 +115,7 @@ class LSTM:
         # update the weights between input and hidden
         self.wff += self.learn * np.dot((hidden_error * h_t * (1.0 - h_t)), training_input_1.T)
         self.wfi += self.learn * np.dot((hidden_error * h_t * (1.0 - h_t)), training_input_2.T)
+        self.wfc += self.learn * np.dot((hidden_error * h_t * (1.0 - h_t)), training_input_2.T)
         self.wfo += self.learn * np.dot((hidden_error * h_t * (1.0 - h_t)), training_input_3.T)
 
 
@@ -116,7 +126,7 @@ class LSTM:
         training_input_3 = np.array(training_input_3, ndmin=2).T
         target = np.array(target, ndmin=2).T
 
-        final_output, h_t = self.forward(training_input_1, training_input_2, training_input_3)
+        final_output, h_t = self.forward(training_input_1, training_input_2, training_input_3, target)
 
         output_error, hidden_error = self.error(target, final_output)
 
@@ -124,12 +134,13 @@ class LSTM:
 
         return final_output
 
-    def test(self, testing_input_1, testing_input_2, testing_input_3):
+    def test(self, testing_input_1, testing_input_2, testing_input_3, test_target):
         # transpose input
         testing_input_1 = testing_input_1.T
         testing_input_2 = testing_input_2.T
         testing_input_3 = testing_input_3.T
-        final_output, h_t = self.forward(testing_input_1, testing_input_2, testing_input_3)
+        test_target = test_target.T
+        final_output, h_t = self.forward(testing_input_1, testing_input_2, testing_input_3, test_target)
 
         return final_output
 
@@ -180,7 +191,7 @@ def main():
     training_input_1 = training_input_1/1000
     training_input_2 = training_input_2/1000
     training_input_3 = training_input_3/1000
-    target = target/1000 
+    target = target/1000
 
     # create neural network
     NN = LSTM()
@@ -231,16 +242,18 @@ def main():
     testing_input_1 = testing_input_1/1000
     testing_input_2 = testing_input_2/1000
     testing_input_3 = testing_input_3/1000
+    test_target = test_target/1000
 
     # test the network with unseen data
-    test = NN.test(testing_input_1, testing_input_2, testing_input_3)
+    test = NN.test(testing_input_1, testing_input_2, testing_input_3, test_target)
 
     # de-Normalize data
-    #input *= 1000
     test *= 1000
+    test_target *= 1000
 
     # transplose test results
     test = test.T
+
 
     #print("\nTest output:\n", test)
 
