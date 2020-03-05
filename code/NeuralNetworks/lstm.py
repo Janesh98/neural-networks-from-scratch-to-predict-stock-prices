@@ -59,7 +59,7 @@ class LSTM:
         return h_t_1
 
         
-    def forward(self, training_input_1, training_input_2, training_input_3, target):
+    def forward(self, training_input_1, training_input_2, training_input_3):
         self.cell_state = [[1, 1] for i in range(len(training_input_1[0]))]
         self.cell_state = np.array(self.cell_state, dtype=float)
         self.cell_state = np.array(self.cell_state, ndmin=2).T
@@ -112,7 +112,7 @@ class LSTM:
         training_input_3 = np.array(training_input_3, ndmin=2).T
         target = np.array(target, ndmin=2).T
 
-        final_output, h_t = self.forward(training_input_1, training_input_2, training_input_3, target)
+        final_output, h_t = self.forward(training_input_1, training_input_2, training_input_3)
 
         output_error, hidden_error = self.error(target, final_output)
 
@@ -120,12 +120,11 @@ class LSTM:
 
         return final_output
 
-    def test(self, testing_input_1, testing_input_2, testing_input_3, test_target):
+    def test(self, testing_input_1, testing_input_2, testing_input_3):
         # transpose input
         testing_input_1 = testing_input_1.T
         testing_input_2 = testing_input_2.T
         testing_input_3 = testing_input_3.T
-        test_target = test_target.T
-        final_output, h_t = self.forward(testing_input_1, testing_input_2, testing_input_3, test_target)
+        final_output, h_t = self.forward(testing_input_1, testing_input_2, testing_input_3)
 
         return final_output

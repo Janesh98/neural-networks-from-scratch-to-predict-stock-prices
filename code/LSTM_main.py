@@ -82,7 +82,7 @@ def main():
     test_target = test_target/1000
 
     # test the network with unseen data
-    test = NN.test(testing_input_1, testing_input_2, testing_input_3, test_target)
+    test = NN.test(testing_input_1, testing_input_2, testing_input_3)
 
     # de-Normalize data
     test *= 1000

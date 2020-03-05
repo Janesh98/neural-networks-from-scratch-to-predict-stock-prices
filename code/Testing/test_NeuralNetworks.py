@@ -127,7 +127,7 @@ class NeuralNetworksTestCase(unittest.TestCase):
         train_output = NN.train(train_input, train_target, epochs=100)
 
         # test on unseen data
-        test_output = NN.test(test_input, test_target)
+        test_output = NN.test(test_input)
 
         # de-normalize
         train_output *= 1000
@@ -174,7 +174,7 @@ class NeuralNetworksTestCase(unittest.TestCase):
                 train_output = NN.train(train_input_1, train_input_2, train_input_3, train_target)
 
         # test on unseen data
-        test_output = NN.test(test_input_1, test_input_2, test_input_3, test_target)
+        test_output = NN.test(test_input_1, test_input_2, test_input_3)
 
         # de-normalize
         train_output *= 1000

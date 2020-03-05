@@ -24,7 +24,7 @@ def rnn_main():
 
     NN = RNN_V2()
     train_outputs = NN.train(train_inputs, train_targets, epochs=100)
-    test_outputs = NN.test(test_inputs, test_targets)
+    test_outputs = NN.test(test_inputs)
 
     # de-normalize
     train_outputs = scaler.denormalize_data(train_outputs)

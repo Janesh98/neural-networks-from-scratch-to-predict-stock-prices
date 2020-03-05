@@ -100,7 +100,7 @@ def lstm_predict(stock, start, end):
     #print("\nTest target output", test_target)
 
     # test the network with unseen data
-    test = NN.test(testing_input_1, testing_input_2, testing_input_3, test_target)
+    test = NN.test(testing_input_1, testing_input_2, testing_input_3)
 
     # de-Normalize data
     test = scaler.denormalize_data(test)
@@ -160,7 +160,7 @@ def rnn_predict(stock, start, end):
     NN = RNN_V2()
     train_outputs = NN.train(train_inputs, train_targets, epochs=100)
     print("trained")
-    test_outputs = NN.test(test_inputs, test_targets)
+    test_outputs = NN.test(test_inputs)
     print("tested")
 
     # de-normalize

@@ -88,7 +88,7 @@ class RNN_V2():
         train_outputs = np.array(train_outputs).T[0]
         return train_outputs
 
-    def test(self, input, target):
+    def test(self, input):
         test_outputs = []
         # forward pass for every timestep
         for i in range(input.shape[0]):
