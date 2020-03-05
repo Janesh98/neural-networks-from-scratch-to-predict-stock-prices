@@ -2,17 +2,7 @@ from NeuralNetworks.lstm import LSTM
 import numpy as np
 from stock import get_stock_data, plot
 import pandas as pd
-
-def mape(actual, prediction): 
-    # mean absolute percentage error (MAPE)
-    return np.mean(np.abs((actual - prediction) / actual)) * 100
-
-def mse(actual, prediction):
-    mse = np.mean((actual - prediction)**2)
-    return mse
-
-def rmse(actual, prediction):
-    return np.sqrt(((actual - prediction) ** 2).mean())
+from utils import *
 
 def main():    
     # returns pandas dataframe

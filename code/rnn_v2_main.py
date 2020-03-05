@@ -9,7 +9,7 @@ def rnn_main():
     stock = df["Adj Close"].values
 
     # normalize
-    scaler = Normalize(stock)
+    scaler = Normalize(stock, max=True)
     normalized = scaler.normalize_data(stock)
 
     # get training and testing inputs and outputs
