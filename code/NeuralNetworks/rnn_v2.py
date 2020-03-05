@@ -38,24 +38,22 @@ class RNN_V2():
         return hidden_states, hidden_output
 
     # updates the weights
-    def update_weights(self, weight_dervs):
-        self.wih -= self.learn * weight_dervs["wih"]
-        self.whh -= self.learn * weight_dervs["whh"]
-        self.who -= self.learn * weight_dervs["who"]
+    def update_weights(self, wih, whh, who):
+        self.wih -= self.learn * wih
+        self.whh -= self.learn * whh
+        self.who -= self.learn * who
 
     def error(self, actual, prediction):
         return np.mean(np.square(actual - prediction))
 
     # backpropagation through time
     def backpropagation(self, input, target, hidden_states, hidden_output):
-        weight_dervs = {
-                    "wih" : np.zeros_like(self.wih),
-                    "who" : np.zeros_like(self.who)
-                    }
         # mse
         error = self.error(target, hidden_output)
 
-        weight_dervs["whh"] = np.dot((hidden_output - target), hidden_states[-1].T)
+        wih = np.zeros_like(self.wih)
+        whh = np.dot((hidden_output - target), hidden_states[-1].T)
+        who = np.zeros_like(self.who)
 
         # gradient of error with respect to whh
         gradient_error = np.dot(self.whh.T, error)
@@ -64,10 +62,11 @@ class RNN_V2():
         gradient_hidden_states = gradient_error * self.d_tanh(hidden_states[-1])
 
         for t in reversed(range(input.shape[0])):
-            weight_dervs["who"] += np.dot(gradient_hidden_states, hidden_states[t-1].T)
-            weight_dervs["wih"] += np.dot(gradient_hidden_states, input[[t-1]])
+            who += np.dot(gradient_hidden_states, hidden_states[t-1].T)
+            wih += np.dot(gradient_hidden_states, input[[t-1]])
 
-        return weight_dervs
+        # update original weights using gradients calculated in backpropagation
+        self.update_weights(wih, whh, who)
 
     def train(self, input, target, epochs=100):
         for epoch in range(epochs):
@@ -80,10 +79,7 @@ class RNN_V2():
                 if epoch == epochs - 1:
                     train_outputs.append(hidden_output.tolist()[0])
 
-                weight_dervs = self.backpropagation(input[i], target[i], hidden_states, hidden_output)
-
-                # update original weights using gradients calculated in backpropagation
-                self.update_weights(weight_dervs)
+                self.backpropagation(input[i], target[i], hidden_states, hidden_output)
 
         train_outputs = np.array(train_outputs).T[0]
         return train_outputs
