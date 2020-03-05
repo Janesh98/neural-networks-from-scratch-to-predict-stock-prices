@@ -18,6 +18,7 @@ class RNN_V2():
         # learning rate
         self.learn = learning_rate
 
+    # derivative of tanh
     def d_tanh(self, x):
         return 1 - np.square(np.tanh(x))
 
@@ -43,6 +44,7 @@ class RNN_V2():
         self.whh -= self.learn * whh
         self.who -= self.learn * who
 
+    # mean squared error
     def error(self, actual, prediction):
         return np.mean(np.square(actual - prediction))
 
@@ -51,9 +53,10 @@ class RNN_V2():
         # mse
         error = self.error(target, hidden_output)
 
+        # initialize weights to shape of original weights
         wih = np.zeros_like(self.wih)
-        whh = np.dot((hidden_output - target), hidden_states[-1].T)
         who = np.zeros_like(self.who)
+        whh = np.zeros_like(self.whh)
 
         # gradient of error with respect to whh
         gradient_error = np.dot(self.whh.T, error)
@@ -61,15 +64,22 @@ class RNN_V2():
         # gradient of tanh with respect to hidden state
         gradient_hidden_states = gradient_error * self.d_tanh(hidden_states[-1])
 
+        # iterate backwards through each timestep
         for t in reversed(range(input.shape[0])):
+            # add gradients to weights
             who += np.dot(gradient_hidden_states, hidden_states[t-1].T)
             wih += np.dot(gradient_hidden_states, input[[t-1]])
+
+        # add gradient to weight
+        whh += np.dot((hidden_output - target), hidden_states[-1].T)
 
         # update original weights using gradients calculated in backpropagation
         self.update_weights(wih, whh, who)
 
     def train(self, input, target, epochs=100):
+        # training cycles
         for epoch in range(epochs):
+            # create list to save outputs
             if epoch == epochs - 1:
                 train_outputs = []
             for i in range(input.shape[0]):
@@ -77,19 +87,28 @@ class RNN_V2():
 
                 # to measure training accuracy
                 if epoch == epochs - 1:
+                    # save outputs
                     train_outputs.append(hidden_output.tolist()[0])
 
                 self.backpropagation(input[i], target[i], hidden_states, hidden_output)
 
+        # conver to array and transpose outputs
         train_outputs = np.array(train_outputs).T[0]
+
+        # return saved outputs
         return train_outputs
 
     def test(self, input):
+        # create list to save outputs
         test_outputs = []
         # forward pass for every timestep
         for i in range(input.shape[0]):
             hidden_states, hidden_output = self.forward(input[i])
+            # save outputs
             test_outputs.append(hidden_output.tolist()[0])
 
+        # conver to array and transpose outputs
         test_outputs = np.array(test_outputs).T[0]
+
+        # return saved outputs
         return test_outputs
