@@ -39,7 +39,8 @@ def lstm_predict(stock, start, end):
 
     print(scaler)
 
-    train_max_index = round(len(df) - 1 * 0.75)
+    train_max_index = round((len(df) - 1) * 0.75)
+    print(len(df), train_max_index)
 
     training_input_1 = [[df[i-6], df[i-5]] for i in range(6, train_max_index)]
     training_input_2 = [[df[i-4], df[i-3]] for i in range(6, train_max_index)]
