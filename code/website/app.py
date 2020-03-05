@@ -6,22 +6,25 @@ import datetime as dt
 import sys
 # to import from a parent directory
 sys.path.append('../')
-from NeuralNetwork import NeuralNetwork, mape
-from RNN import RNN
+from NeuralNetworks.FeedForward import FeedForward
+from NeuralNetworks.rnn_v2 import RNN_V2
+from NeuralNetworks.lstm import LSTM
+from utils import *
+from normalize import Normalize
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 # prevent caching so website can be updated dynamically
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-def rnn_predict(stock, start, end):
+def lstm_predict(stock, start, end):
     # get stock data
     try:
         df = get_stock_data(stock, start, end, json=False)
     except:
         e = sys.exc_info()
         print(e)
-        print("rnn predict fail")
+        print("lstm predict fail")
         return e
 
     print("got stock data")
@@ -49,7 +52,7 @@ def rnn_predict(stock, start, end):
     target = target/1000 #make y less than 1
 
     # create neural network
-    NN = RNN()
+    NN = LSTM()
 
     print("created nn")
     # number of training cycles
@@ -111,6 +114,69 @@ def rnn_predict(stock, start, end):
     print(df, prices, pd.DataFrame(test), str(round(accuracy, 2)), sep="\n")
     return df, prices, pd.DataFrame(test), str(round(accuracy, 2))
 
+
+def rnn_predict(stock, start, end):
+    # get stock data
+    try:
+        df = get_stock_data(stock, start, end, json=False)
+    except:
+        e = sys.exc_info()
+        print(e)
+        print("rnn predict fail")
+        return e
+
+    print("got stock data")
+
+    # normalize
+    scaler = Normalize(df)
+    normalized = scaler.normalize_data(df)
+
+    print("normalized")
+
+    # get training and testing inputs and outputs
+    train_inputs, train_targets, test_inputs, test_targets = train_test_split(normalized)
+
+    print("i/o")
+
+    train_inputs = np.array(train_inputs)
+    train_targets = np.array(train_targets)
+    test_inputs = np.array(test_inputs)
+    test_targets = np.array(test_targets)
+
+    print("np.array")
+
+    # returns 3d array in format [inputs, timesteps, features]
+    train_inputs = to_3d(train_inputs)
+    test_inputs = to_3d(test_inputs)
+
+    print("3d")
+
+    #print(train_inputs.shape, train_targets.shape)
+    #print(test_inputs.shape, test_targets.shape)
+
+    NN = RNN_V2()
+    train_outputs = NN.train(train_inputs, train_targets, epochs=100)
+    print("trained")
+    test_outputs = NN.test(test_inputs, test_targets)
+    print("tested")
+
+    # de-normalize
+    train_outputs = scaler.denormalize_data(train_outputs)
+    train_targets = scaler.denormalize_data(train_targets)
+    test_outputs = scaler.denormalize_data(test_outputs)
+    test_targets = scaler.denormalize_data(test_targets).T
+
+    print(test_outputs, test_targets, sep="\ntargets:\n")
+
+    print("denormalized")
+    # accuracy
+    accuracy = 100 - mape(test_targets, test_outputs)
+    print(accuracy)
+
+    print("returning")
+
+    return df, pd.DataFrame(train_outputs), pd.DataFrame(test_outputs), str(round(accuracy, 2))
+
 def train_test_split(df, split=0.75):
     # if split=0.75, splits data into 75% training, 25% test
     # provides targets for training and accuracy measurments
@@ -147,14 +213,13 @@ def shift_date(date, shift=4):
 def handle_nn(stock, start, end, model):
     # create nn the user selected
     if model == "ff":
-        NN = NeuralNetwork()
+        NN = FeedForward()
         return predict(stock, start, end, NN)
     if model == "rnn":
-        print("why u no work ahhhh")
         return rnn_predict(stock, start, end)
     else:
         # TODO update nn created below when finished
-        NN = NeuralNetwork()
+        NN = FeedForward()
         return predict(stock, start, end, NN)
 
 def predict(stock, start, end, NN):
@@ -170,13 +235,20 @@ def predict(stock, start, end, NN):
         print("predict fail")
         return e
 
+    print(" got data")
+
     # split data into training and testing
     train_inputs, train_targets, test_inputs, test_targets = train_test_split(df)
 
+    print("got i/0")
+
     # normalize data
-    normalising_factor = NN.normalise_factor(train_inputs)
-    train_inputs = NN.normalise_data(train_inputs, normalising_factor)
-    train_targets = NN.normalise_data(train_targets, normalising_factor)
+    scaler = Normalize(df)
+    print(scaler.factor)
+    train_inputs = scaler.normalize_data(train_inputs)
+    train_targets = scaler.normalize_data(train_targets)
+
+    print("normalized")
 
     # number of training cycles
     epochs = 100
@@ -186,19 +258,29 @@ def predict(stock, start, end, NN):
         for prices in train_inputs:
             train_outputs = NN.train(train_inputs, train_targets)
 
+    print("trained")
+
     # de-Normalize data
-    train_outputs = NN.denormalise_data(train_outputs, normalising_factor)
+    train_outputs = scaler.denormalize_data(train_outputs)
     prices = pd.DataFrame(train_outputs.T)
 
+    print("denormalized")
+
     # Normalize data
-    test_inputs = NN.normalise_data(test_inputs, normalising_factor)
+    test_inputs = scaler.normalize_data(test_inputs)
+
+    print("normalized")
 
     # test the network with unseen data
     test_outputs = NN.test(test_inputs)
 
+    print("tested")
+
     # de-Normalize data
-    test_inputs = NN.denormalise_data(test_inputs, normalising_factor)
-    test_outputs = NN.denormalise_data(test_outputs, normalising_factor)
+    test_inputs = scaler.denormalize_data(test_inputs)
+    test_outputs = scaler.denormalize_data(test_outputs)
+
+    print("denormalized")
 
     # transplose test results
     test_outputs = test_outputs.T
