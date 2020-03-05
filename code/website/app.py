@@ -9,6 +9,7 @@ sys.path.append('../')
 from NeuralNetworks.FeedForward import FeedForward
 from NeuralNetworks.rnn_v2 import RNN_V2
 from NeuralNetworks.lstm import LSTM
+from NeuralNetworks.RNN import RNN
 from utils import *
 from normalize import Normalize
 
@@ -18,6 +19,8 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 def lstm_predict(stock, start, end):
+    # shift start date -4 days for correct test/train i/o
+
     # get stock data
     try:
         df = get_stock_data(stock, start, end, json=False)
@@ -29,12 +32,21 @@ def lstm_predict(stock, start, end):
 
     print("got stock data")
 
-    # X = (adjclose for 2 days ago, adjclose for previous day)
-    # y = actual adjclose for current day
-    training_input_1 = [[df[i-4], df[i-3]] for i in range(len(df[:104])) if i >= 4]
-    training_input_2 = [[df[i-2]] for i in range(len(df[:104])) if i >= 4] 
-    training_input_3 = [[df[i - 1]] for i in range(len(df[:104])) if i >= 4]
-    target = [[i] for i in df[4:104]]
+    stock = df
+    
+    #scaler = Normalize(df)
+    #df = scaler.normalize_data(df)
+
+    scaler = (10 ** len(str(round(max(df)))))
+    print(scaler)
+    df = df / scaler
+
+    train_max_index = round(len(df) - 1 * 0.75)
+
+    training_input_1 = [[df[i-6], df[i-5]] for i in range(6, train_max_index)]
+    training_input_2 = [[df[i-4], df[i-3]] for i in range(6, train_max_index)]
+    training_input_3 = [[df[i-2], df[i-1]] for i in range(6, train_max_index)]
+    target = [[i] for i in df[6:train_max_index]]
 
     training_input_1 = np.array(training_input_1, dtype=float)
     training_input_2 = np.array(training_input_2, dtype=float)
@@ -43,65 +55,57 @@ def lstm_predict(stock, start, end):
 
     assert len(training_input_1) == len(training_input_2) == len(training_input_3) == len(target)
 
-    print("I/o")
-
-    # Normalize
-    training_input_1 = training_input_1/1000
-    training_input_2 = training_input_2/1000
-    training_input_3 = training_input_3/1000
-    target = target/1000 #make y less than 1
-
     # create neural network
     NN = LSTM()
 
-    print("created nn")
     # number of training cycles
-    training_cycles = 200
-
+    training_cycles = 100
 
     # train the neural network
     for cycle in range(training_cycles):
         for n in training_input_1:
             output = NN.train(training_input_1, training_input_2, training_input_3, target)
 
-    print("training")
 
     # de-Normalize
-    output *= 1000
-    target *= 1000
+    output *= scaler
+    target *= scaler
 
     # transpose
     output = output.T
 
+
     # change data type so it can be plotted
     prices = pd.DataFrame(output)
 
-    # [price 2 days ago, price yesterday] for each day in range
-    testing_input_1 = [[df[i-4], df[i-3]] for i in range(104, 154)]
-    testing_input_2 = [[df[i-2]] for i in range(104, 154)] 
-    testing_input_3 = [[df[i-1]] for i in range(104, 154)]
-    test_target = [[i] for i in df[104:154]]
+    #print("\nTraining output:\n", output)
 
-    assert len(testing_input_1) == len(testing_input_2) == len(testing_input_3) ==len(test_target)
+    print("\nTraining MSE Accuracy: {:.4f}%".format(100 - mse(target, output)))
+    print("Training RMSE Accuracy: {:.4f}%".format(100 - rmse(target, output)))
+    print("Training MAPE Accuracy: {:.4f}%".format(100 - mape(target, output)))
+
+    # [price 2 days ago, price yesterday] for each day in range
+    testing_input_1 = [[df[i-6], df[i-5]] for i in range(train_max_index, len(df))]
+    testing_input_2 = [[df[i-4], df[i-3]] for i in range(train_max_index, len(df))]
+    testing_input_3 = [[df[i-2], df[i-1]] for i in range(train_max_index, len(df))]
+    test_target = [[i] for i in df[train_max_index:len(df)]]
+
+    assert len(testing_input_1) == len(testing_input_2) == len(testing_input_3) == len(test_target)
 
     testing_input_1 = np.array(testing_input_1, dtype=float)
     testing_input_2 = np.array(testing_input_2, dtype=float)
     testing_input_3 = np.array(testing_input_3, dtype=float)
     test_target = np.array(test_target, dtype=float)
 
-    # Normalize
-    testing_input_1 = testing_input_1/1000
-    testing_input_2 = testing_input_2/1000
-    testing_input_3 = testing_input_3/1000
+    #print("\nTest input", input)
+    #print("\nTest target output", test_target)
 
     # test the network with unseen data
-    test = NN.test(testing_input_1, testing_input_2, testing_input_3)
-
-    print("tested")
+    test = NN.test(testing_input_1, testing_input_2, testing_input_3, test_target)
 
     # de-Normalize data
-    #input *= 1000
-    test *= 1000
+    test *= scaler
+    test_target *= scaler
 
     # transplose test results
     test = test.T
@@ -111,8 +115,8 @@ def lstm_predict(stock, start, end):
     print(accuracy)
 
     print("returning")
-    print(df, prices, pd.DataFrame(test), str(round(accuracy, 2)), sep="\n")
-    return df, prices, pd.DataFrame(test), str(round(accuracy, 2))
+    print(stock, prices, pd.DataFrame(test), str(round(accuracy, 2)), sep="\n")
+    return stock, prices, pd.DataFrame(test), str(round(accuracy, 2))
 
 
 def rnn_predict(stock, start, end):
@@ -219,8 +223,7 @@ def handle_nn(stock, start, end, model):
         return rnn_predict(stock, start, end)
     else:
         # TODO update nn created below when finished
-        NN = FeedForward()
-        return predict(stock, start, end, NN)
+        return lstm_predict(stock, start, end)
 
 def predict(stock, start, end, NN):
     # shift start date -4 days for correct test/train i/o
