@@ -31,7 +31,10 @@ class NormalizeTestCase(unittest.TestCase):
 
         # ensure denormalized values are the same as the original
         for x, y in zip(test, denormalized):
-            self.assertEqual(x, y)        
+            try:
+                self.assertEqual(x, y)
+            except AssertionError:
+                self.assertAlmostEqual(x, y, 12)        
 
 class ErrorTestCase(unittest.TestCase):
     """ if both arrays are the same the error should be 0 """
@@ -89,7 +92,7 @@ class NeuralNetworksTestCase(unittest.TestCase):
 
         # ensure network can predict a line with high accuracy
         self.assertGreaterEqual(100 - mape(train_target, train_output), 99.99)
-        self.assertGreaterEqual(100 - mape(test_target, test_output), 96.00)
+        self.assertGreaterEqual(100 - mape(test_target, test_output), 97.00)
 
     def test_RNN(self):
         # create recurrent neural network
@@ -136,7 +139,7 @@ class NeuralNetworksTestCase(unittest.TestCase):
         test_target *= 1000
 
         self.assertGreaterEqual(100 - mape(train_target, train_output), 99.99)
-        self.assertGreaterEqual(100 - mape(test_target, test_output), 96.00)
+        self.assertGreaterEqual(100 - mape(test_target, test_output), 97.00)
 
     def test_LSTM(self):
         # create recurrent neural network
@@ -183,7 +186,7 @@ class NeuralNetworksTestCase(unittest.TestCase):
         test_target *= 1000
 
         self.assertGreaterEqual(100 - mape(train_target, train_output), 99.99)
-        self.assertGreaterEqual(100 - mape(test_target, test_output), 96.00)
+        self.assertGreaterEqual(100 - mape(test_target, test_output), 97.00)
 
 if __name__ == '__main__':
     unittest.main()
