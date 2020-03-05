@@ -1,5 +1,7 @@
 import unittest
-from tests import ErrorTestCase, NeuralNetworksTestCase, NormalizeTestCase
+from test_error import ErrorTestCase
+from test_NeuralNetworks import NeuralNetworksTestCase
+from test_normalize import NormalizeTestCase
 
 def my_suite():
     suite = unittest.TestSuite()
