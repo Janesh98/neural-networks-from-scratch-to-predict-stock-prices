@@ -1,82 +1,89 @@
-import numpy as np
+from FeedForward import FeedForward
 import matplotlib.pyplot as plt
-from stock import get_stock_data
+from stock import get_stock_data, plot
 import pandas as pd
-import sys
-from NeuralNetwork import NeuralNetwork
+from normalize import Normalize
+import numpy as np
+from utils import *
 
-def plot(actual, prediction):
-    plt.plot([0 + i for i in range(0, 150)], actual, "r")
-    plt.plot(prediction[:100], "b")
-    plt.plot([99 + i for i in range(0, 51)], prediction[99:],  "g")
-    plt.xlabel("Days")
-    plt.ylabel("Price")
-    plt.title("Stock Prediction")
-    plt.legend(["Actual", "Training Prediction", "Test Prediction"])
-    plt.grid()
-    plt.show()
-    
-def main():
-    input_nodes = 2
-    hidden_nodes = 3
-    output_nodes = 1
-
-    learning_rate = 0.3
-
-    # create neural network
-    NN = NeuralNetwork(input_nodes,hidden_nodes,output_nodes, learning_rate)
-
-    ticker = input("Enter company's ticker symbol(e.g. TSLA)\n")
-    ticker = ticker.upper()
-    df = get_stock_data(ticker)
+def ff_main():    
+    # returns pandas dataframe
+    df = get_stock_data("TSLA")
+    # extract only the adjusted close prices of the stock
     df = df['Adj Close']
-
 
     # X = (adjclose for 2 days ago, adjclose for previous day)
     # y = actual adjclose for current day
-    X = [[df[i-1], df[i]] for i in range(len(df[:101])) if i >= 1]
-    y = [[df[i]] for i in range(len(df)) if i > 1 and i <= 101]
+    X = [[df[i-2], df[i-1]] for i in range(len(df[:102])) if i >= 2]
+    y = [[i] for i in df[2:102]]
 
-    normalising_factor = NN.normalise_factor(X)
-
-    X = NN.normalise_data(X, normalising_factor)
-    y = NN.normalise_data(y, normalising_factor)
+    X = np.array(X, dtype=float)
+    y = np.array(y, dtype=float)
 
     assert len(X) == len(y)
+    
+    # Normalize
+    scaler = Normalize(df)
+    X = scaler.normalize_data(X)
+    y = scaler.normalize_data(y)
+
+    # create neural network
+    NN = FeedForward()
 
     # number of training cycles
-    training_cycles = 100
+    epochs = 100
 
     # train the neural network
-    for cyclewi in range(training_cycles):
+    for e in range(epochs):
         for n in X:
             output = NN.train(X, y)
 
-    output = NN.denormalise_data(output, normalising_factor)
-    prices = pd.DataFrame(output.T)
+    # de-Normalize
+    output = scaler.denormalize_data(output)
+    y = scaler.denormalize_data(y)
 
-    # [price yesterday, current price] for each day in range
-    inputs = [[df[i-1], df[i]] for i in range(100, 150)]
+    # transpose
+    output = output.T
 
-    # Normalize data
-    inputs = NN.normalise_data(inputs, normalising_factor)
+    # change data type so it can be plotted
+    prices = pd.DataFrame(output)
+
+    print("\nTraining MSE Accuracy: {:.4f}%".format(100 - mse(y, output)))
+    print("Training RMSE Accuracy: {:.4f}%".format(100 - rmse(y, output)))
+    print("Training MAPE Accuracy: {:.4f}%".format(100 - mape(y, output)))
+
+    # [price 2 days ago, price yesterday] for each day in range
+    input = [[df[i-2], df[i-1]] for i in range(102, 152)]
+    test_target = [[i] for i in df[102:152]]
+
+    assert len(input) == len(test_target)
+
+    input = np.array(input, dtype=float)
+    test_target = np.array(test_target, dtype=float)
+
+    #print("\nTest input", input)
+    #print("\nTest target output", test_target)
+
+    # Normalize
+    input = scaler.normalize_data(input)
 
     # test the network with unseen data
-    test = NN.test(inputs)
+    test = NN.test(input)
 
     # de-Normalize data
-    inputs = NN.denormalise_data(inputs, normalising_factor)
-    test = NN.denormalise_data(test, normalising_factor)
+    input = scaler.denormalize_data(input)
+    test = scaler.denormalize_data(test)
 
     # transplose test results
     test = test.T
 
-    graph_fix = [[0]] * 100
-    graph_fix = np.array(graph_fix, dtype=float)
-    fixed_test = np.concatenate((graph_fix, test))
-    for_plot = np.concatenate((prices[:100], fixed_test[100:]))
-    plot(df[2:152], for_plot)
+    #print("\nTest output:\n", test)
 
+    print("\nTest MSE Accuracy: {:.4f}%".format(100 - mse(test_target, test)))
+    print("Test RMSE Accuracy: {:.4f}%".format(100 - rmse(test_target, test)))
+    print("Test MAPE Accuracy: {:.4f}%".format(100 - mape(test_target, test)))
 
-if __name__ == '__main__':
-    main()
+    plot(df[2:152], output, test)
+
+if __name__ == "__main__":
+    ff_main()
