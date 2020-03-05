@@ -1,4 +1,4 @@
-from FeedForward import FeedForward
+from NeuralNetworks.FeedForward import FeedForward
 import matplotlib.pyplot as plt
 from stock import get_stock_data, plot
 import pandas as pd
