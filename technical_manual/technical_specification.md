@@ -192,7 +192,7 @@ _7.References_
 
    We ensured all data was normalized in a range of 0 and 1 and checked that after denormalizing, the data was reverted back to the original values. This was an important test as an error here could significantly skew results if by a large enough value.
 
-   **5.3 Vanishing Gradient Test**
+   **5.3 Accurracy Measurement Test**
 
    To evaluate the accuracy of our model we used error testing functions such as MSE (Mean Squared Error), RMSE (Root Mean Squared Error), MAPE (Mean Absolute Percentage Error). We ensured that if the two values are the same, the MAPE error would return an error of 0.0% indicating 100% accuracy as it should. Although not part of a test we validated the error returned by our functions against a calculator using their original mathematical formula to ensure correct results for different sets of values.
 
