@@ -25,6 +25,7 @@ def lstm_predict(stock, start, end):
     try:
         df = get_stock_data(stock, start, end, json=False)
     except:
+        # error info
         e = sys.exc_info()
         print(e)
         print("lstm predict fail")
@@ -123,6 +124,7 @@ def rnn_predict(stock, start, end):
     try:
         df = get_stock_data(stock, start, end, json=False)
     except:
+        # error info
         e = sys.exc_info()
         print(e)
         print("rnn predict fail")
@@ -232,6 +234,7 @@ def predict(stock, start, end, NN):
     try:
         df = get_stock_data(stock, start, end, json=False)
     except:
+        # error info
         e = sys.exc_info()
         print(e)
         print("predict fail")
@@ -304,6 +307,7 @@ def get_stock_data(ticker, start=[2019, 1, 1], end=[2019, 12, 31], json=True):
     try:
         df = web.DataReader(ticker, 'yahoo', start, end)
     except:
+        # error info
         e = sys.exc_info()
         print(e)
         print("get data fail")
@@ -320,9 +324,12 @@ def get_stock_data(ticker, start=[2019, 1, 1], end=[2019, 12, 31], json=True):
     else:
         # return data as csv
         return df
-
+# app routes are urls which facilitate
+# data transmit, mainly:
+# Get and Post requests
 @app.route('/')
 def index():
+    # load html from templates directory
     return render_template('index.html')
 
 @app.route('/getpythondata')
@@ -348,6 +355,7 @@ def post_js_data():
             actual, train_res, test_res, accuracy = handle_nn(stock, start, end, model)
             print(accuracy)
         except:
+            # error info
             e = sys.exc_info()
             print(e)
             print("handle_nn fail")
