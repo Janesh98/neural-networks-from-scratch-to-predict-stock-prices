@@ -34,12 +34,10 @@ def lstm_predict(stock, start, end):
 
     stock = df
     
-    #scaler = Normalize(df)
-    #df = scaler.normalize_data(df)
+    scaler = Normalize(df)
+    df = scaler.normalize_data(df)
 
-    scaler = (10 ** len(str(round(max(df)))))
     print(scaler)
-    df = df / scaler
 
     train_max_index = round(len(df) - 1 * 0.75)
 
@@ -68,8 +66,8 @@ def lstm_predict(stock, start, end):
 
 
     # de-Normalize
-    output *= scaler
-    target *= scaler
+    output = scaler.denormalize_data(output)
+    target = scaler.denormalize_data(target)
 
     # transpose
     output = output.T
@@ -104,8 +102,8 @@ def lstm_predict(stock, start, end):
     test = NN.test(testing_input_1, testing_input_2, testing_input_3, test_target)
 
     # de-Normalize data
-    test *= scaler
-    test_target *= scaler
+    test = scaler.denormalize_data(test)
+    test_target = scaler.denormalize_data(test_target)
 
     # transplose test results
     test = test.T
@@ -132,7 +130,7 @@ def rnn_predict(stock, start, end):
     print("got stock data")
 
     # normalize
-    scaler = Normalize(df)
+    scaler = Normalize(df, max=True)
     normalized = scaler.normalize_data(df)
 
     print("normalized")
