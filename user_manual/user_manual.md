@@ -68,7 +68,7 @@ _4. How to run python files from terminal_
 
    
 
-4. ####How to run python files terminal
+4. #### How to run python files terminal
 
    In addition to using the website above you may also run each of the python files listed below separately by navigating to the code directory in a terminal and entering the command beside the name of the file you wish to run into the terminal.
 
