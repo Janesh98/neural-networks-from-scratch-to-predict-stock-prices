@@ -174,7 +174,7 @@ _7.References_
 
    * **Solution 2**
 
-     We decided to return to the original normalizing technique of using the max value as it did not possess any of these issues.
+     We decided to use different normalization techniques for different Neural Networks to ensure each Neural Network could perform to the best of its' ability.
 
    * **Solution 3**
 
@@ -186,7 +186,7 @@ _7.References_
 
    **5.1 Neural Networks Test**
 
-   To ensure the Neural Network was working correctly we created a test for each Neural Network to ensure it could predict a straight horizontal line with high accuracy.We chose this problem as it is relatively simple and should be easily solvable by a Neural Network. Every Neural Network which includes the Feed Forward, RNN and LSTM performed very well on this test, achieving a training accuracy of 99.99% and a minimum testing accuracy of 97%. This test was run after any change was made to code of any Neural Network to ensure it still performed well on the basic task of predicting a straight line.
+   To ensure the Neural Network was working correctly we created a test for each Neural Network to ensure it could predict a straight horizontal line with high accuracy.We chose this problem as it is relatively simple and should be easily solvable by a Neural Network. Every Neural Network which includes the Feed Forward, RNN and LSTM performed very well on this test, achieving a training accuracy of 99% and a minimum testing accuracy of 97%. This test was run after any change was made to code of any Neural Network to ensure it still performed well on the basic task of predicting a straight line.
 
    **5.2 Normalization Test**
 
