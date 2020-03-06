@@ -148,5 +148,5 @@ class LSTM:
         testing_input_3 = testing_input_3.T
         # forward propagation
         final_output, h_t = self.forward(testing_input_1, testing_input_2, testing_input_3)
-
+        #return final input
         return final_output
