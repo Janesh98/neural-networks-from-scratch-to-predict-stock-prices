@@ -31,17 +31,12 @@ def lstm_predict(stock, start, end):
         print("lstm predict fail")
         return e
 
-    print("got stock data")
-
     stock = df
     
     scaler = Normalize(df)
     df = scaler.normalize_data(df)
 
-    print(scaler)
-
     train_max_index = round((len(df) - 1) * 0.75)
-    print(len(df), train_max_index)
 
     training_input_1 = [[df[i-6], df[i-5]] for i in range(6, train_max_index)]
     training_input_2 = [[df[i-4], df[i-3]] for i in range(6, train_max_index)]
@@ -74,15 +69,8 @@ def lstm_predict(stock, start, end):
     # transpose
     output = output.T
 
-
     # change data type so it can be plotted
     prices = pd.DataFrame(output)
-
-    #print("\nTraining output:\n", output)
-
-    print("\nTraining MSE Accuracy: {:.4f}%".format(100 - mse(target, output)))
-    print("Training RMSE Accuracy: {:.4f}%".format(100 - rmse(target, output)))
-    print("Training MAPE Accuracy: {:.4f}%".format(100 - mape(target, output)))
 
     # [price 2 days ago, price yesterday] for each day in range
     testing_input_1 = [[df[i-6], df[i-5]] for i in range(train_max_index, len(df))]
@@ -97,9 +85,6 @@ def lstm_predict(stock, start, end):
     testing_input_3 = np.array(testing_input_3, dtype=float)
     test_target = np.array(test_target, dtype=float)
 
-    #print("\nTest input", input)
-    #print("\nTest target output", test_target)
-
     # test the network with unseen data
     test = NN.test(testing_input_1, testing_input_2, testing_input_3)
 
@@ -112,10 +97,7 @@ def lstm_predict(stock, start, end):
 
     # accuracy
     accuracy = 100 - mape(test_target, test)
-    print(accuracy)
 
-    print("returning")
-    print(stock, prices, pd.DataFrame(test), str(round(accuracy, 2)), sep="\n")
     return stock, prices, pd.DataFrame(test), str(round(accuracy, 2))
 
 
@@ -130,40 +112,25 @@ def rnn_predict(stock, start, end):
         print("rnn predict fail")
         return e
 
-    print("got stock data")
-
     # normalize
     scaler = Normalize(df, max=True)
     normalized = scaler.normalize_data(df)
 
-    print("normalized")
-
     # get training and testing inputs and outputs
     train_inputs, train_targets, test_inputs, test_targets = train_test_split(normalized)
-
-    print("i/o")
 
     train_inputs = np.array(train_inputs)
     train_targets = np.array(train_targets)
     test_inputs = np.array(test_inputs)
     test_targets = np.array(test_targets)
 
-    print("np.array")
-
     # returns 3d array in format [inputs, timesteps, features]
     train_inputs = to_3d(train_inputs)
     test_inputs = to_3d(test_inputs)
 
-    print("3d")
-
-    #print(train_inputs.shape, train_targets.shape)
-    #print(test_inputs.shape, test_targets.shape)
-
     NN = RNN_V2()
     train_outputs = NN.train(train_inputs, train_targets, epochs=100)
-    print("trained")
     test_outputs = NN.test(test_inputs)
-    print("tested")
 
     # de-normalize
     train_outputs = scaler.denormalize_data(train_outputs)
@@ -171,14 +138,8 @@ def rnn_predict(stock, start, end):
     test_outputs = scaler.denormalize_data(test_outputs)
     test_targets = scaler.denormalize_data(test_targets).T
 
-    print(test_outputs, test_targets, sep="\ntargets:\n")
-
-    print("denormalized")
     # accuracy
     accuracy = 100 - mape(test_targets, test_outputs)
-    print(accuracy)
-
-    print("returning")
 
     return df, pd.DataFrame(train_outputs), pd.DataFrame(test_outputs), str(round(accuracy, 2))
 
@@ -212,7 +173,6 @@ def shift_date(date, shift=4):
     new_date = dt.date(*date) - dt.timedelta(days=shift)
     new_date = new_date.strftime("%Y/%m/%d")
     new_date = [int(s) for s in new_date.split("/")]
-    #print(date, new_date)
     return new_date
 
 def handle_nn(stock, start, end, model):
@@ -240,20 +200,13 @@ def predict(stock, start, end, NN):
         print("predict fail")
         return e
 
-    print(" got data")
-
     # split data into training and testing
     train_inputs, train_targets, test_inputs, test_targets = train_test_split(df)
 
-    print("got i/0")
-
     # normalize data
     scaler = MinMax(df)
-    print(scaler.factor)
     train_inputs = scaler.normalize_data(train_inputs)
     train_targets = scaler.normalize_data(train_targets)
-
-    print("normalized")
 
     # number of training cycles
     epochs = 100
@@ -263,29 +216,19 @@ def predict(stock, start, end, NN):
         for prices in train_inputs:
             train_outputs = NN.train(train_inputs, train_targets)
 
-    print("trained")
-
     # de-Normalize data
     train_outputs = scaler.denormalize_data(train_outputs)
     prices = pd.DataFrame(train_outputs.T)
 
-    print("denormalized")
-
     # Normalize data
     test_inputs = scaler.normalize_data(test_inputs)
-
-    print("normalized")
 
     # test the network with unseen data
     test_outputs = NN.test(test_inputs)
 
-    print("tested")
-
     # de-Normalize data
     test_inputs = scaler.denormalize_data(test_inputs)
     test_outputs = scaler.denormalize_data(test_outputs)
-
-    print("denormalized")
 
     # transplose test results
     test_outputs = test_outputs.T
@@ -353,7 +296,6 @@ def post_js_data():
         try:
             # get original stock data, train and test results
             actual, train_res, test_res, accuracy = handle_nn(stock, start, end, model)
-            print(accuracy)
         except:
             # error info
             e = sys.exc_info()

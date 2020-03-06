@@ -1,6 +1,8 @@
 import numpy as np
 
 class Normalize:
+    """normalizes the data between 0 and 1
+    and reverts data back to original values"""
     def __init__(self, data, max=False):
         if max:
             self.factor = self.normalize_max(data)
@@ -51,7 +53,6 @@ class MinMax:
     # minmax denormalization
     def denormalize_minmax(self, data):
         y = np.dot(data, self.factor)
-        print(self.minim)
         for i in y:
             i += self.minim
         return y
