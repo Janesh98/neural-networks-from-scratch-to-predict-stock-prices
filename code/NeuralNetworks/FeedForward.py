@@ -22,15 +22,19 @@ class FeedForward:
         return 1/(1+np.exp(-x))
 
     def forward(self, input):
-        # calculate signals into hidden layer
+        # matrix dot product of weight wih and input
+        # to produce the input for the hidden layer
         hidden_input = np.dot(self.wih, input)
-        # calculate the signals emerging from hidden layer
+        # squash hidden_input into range (0, 1)
+        # to produce output of hidden layer
         hidden_output = self.sigmoid(hidden_input)
         
-        # calculate signals into final output layer
+        # matrix dot product of weight who and output from
+        # hidden layer to produce the input for the output layer
         final_input = np.dot(self.who, hidden_output)
 
-        # calculate the signals emerging from final output layer
+        # squash final_input into range (0, 1)
+        # to produce output of output layer
         final_output = self.sigmoid(final_input)
 
         return final_output, hidden_output
