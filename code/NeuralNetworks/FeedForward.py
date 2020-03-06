@@ -3,7 +3,7 @@ import numpy as np
 class FeedForward:
 
     def __init__(self, input = 2, hidden = 3, output = 1, learning_rate = 0.3):
-        # set number of nodes in each input, hidden, output layer
+        # number of nodes for each layer
         self.input_nodes = input
         self.hidden_nodes = hidden
         self.output_nodes = output
@@ -36,36 +36,43 @@ class FeedForward:
         return final_output, hidden_output
 
     def error(self, target, final_output):
-        # output layer error is the (target - actual)
-        output_error = target - final_output
-        # hidden layer error is the output_error, split by weights, recombined at hidden nodes
-        hidden_error = np.dot(self.who.T, output_error) 
+        # error is the distance from target and prediction
+        error = target - final_output
+        # hidden error is the dot product of the weight who transposed
+        # and the error calcualted above
+        hidden_error = np.dot(self.who.T, error) 
 
-        return output_error, hidden_error
+        return error, hidden_error
 
-    def backpropagation(self, input, hidden_output, final_output, output_error, hidden_error):
-        # update the weights between hidden and output
-        self.who += self.learn * np.dot((output_error * final_output * (1.0 - final_output)), hidden_output.T)
+    def backpropagation(self, input, hidden_output, final_output, error, hidden_error):
+        # update the weight who with errors previously calculated
+        self.who += self.learn * np.dot((error * final_output * (1.0 - final_output)), hidden_output.T)
         
-        # update the weights between input and hidden
+        # update the weight wih with errors previously calculated
         self.wih += self.learn * np.dot((hidden_error * hidden_output * (1.0 - hidden_output)), input.T)
         
     def train(self, input, target):
-        # convert lists to 2d arrays
+        # reshape input and target into 2d matrices
         input = np.array(input, ndmin=2).T
         target = np.array(target, ndmin=2).T
 
+        # forward pass throught network
         final_output, hidden_output = self.forward(input)
 
-        output_error, hidden_error = self.error(target, final_output)
+        # get errors from forward pass result
+        error, hidden_error = self.error(target, final_output)
 
-        self.backpropagation(input, hidden_output, final_output, output_error, hidden_error)
+        # backpropagate the errors through the network, updating weights
+        self.backpropagation(input, hidden_output, final_output, error, hidden_error)
 
+        # return training results
         return final_output
 
     def test(self, input):
         # transpose input
         input = input.T
+        # perform one forward pass through the network to get predictions
         final_output, hidden_output = self.forward(input)
 
+        # return prediction
         return final_output
