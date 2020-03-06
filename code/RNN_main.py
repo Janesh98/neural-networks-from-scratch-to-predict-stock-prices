@@ -36,7 +36,7 @@ def main():
     # extract only the adjusted close prices of the stock
     df = df['Adj Close']
 
-    # X = (adjclose for 2 days ago, adjclose for previous day)
+    # training inputs = adjclose for previous 4 days
     # y = actual adjclose for current day
     training_input_1 = [[df[i-4], df[i-3]] for i in range(len(df[:104])) if i >= 4]
     training_input_2 = [[df[i-2]] for i in range(len(df[:104])) if i >= 4] 
@@ -51,8 +51,6 @@ def main():
 
     assert len(training_input_1) == len(training_input_2) == len(training_input_3) == len(target)
 
-    #print("\ninput:\n", X)
-    #print("\nTraining target output:", y)
 
     # Normalize
     training_input_1 = training_input_1/1000
@@ -81,14 +79,14 @@ def main():
     # change data type so it can be plotted
     prices = pd.DataFrame(output)
 
-    #print("\nTraining output:\n", output)
 
+    # print various accuracies
     print("\nTraining MSE Accuracy: {:.4f}%".format(100 - mse(target, output)))
     print("Training RMSE Accuracy: {:.4f}%".format(100 - rmse(target, output)))
     print("Training MAPE Accuracy: {:.4f}%".format(100 - mape(target, output)))
 
 
-    # [price 2 days ago, price yesterday] for each day in range
+    # testing inputs are for previous 4 days
     testing_input_1 = [[df[i-4], df[i-3]] for i in range(104, 154)]
     testing_input_2 = [[df[i-2]] for i in range(104, 154)] 
     testing_input_3 = [[df[i-1]] for i in range(104, 154)]
@@ -102,8 +100,6 @@ def main():
     testing_input_3 = np.array(testing_input_3, dtype=float)
     test_target = np.array(test_target, dtype=float)
 
-    #print("\nTest input", input)
-    #print("\nTest target output", test_target)
 
     # Normalize
     testing_input_1 = testing_input_1/1000
@@ -120,8 +116,8 @@ def main():
     # transplose test results
     test = test.T
 
-    #print("\nTest output:\n", test)
 
+    # print various accuracies
     print("\nTest MSE Accuracy: {:.4f}%".format(100 - mse(test_target, test)))
     print("Test RMSE Accuracy: {:.4f}%".format(100 - rmse(test_target, test)))
     print("Test MAPE Accuracy: {:.4f}%".format(100 - mape(test_target, test)))
