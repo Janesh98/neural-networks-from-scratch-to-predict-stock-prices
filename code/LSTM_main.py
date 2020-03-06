@@ -7,10 +7,10 @@ from utils import *
 def main():    
     # returns pandas dataframe
     df = get_stock_data("FB")
-    # extract only the adjusted close prices of the stock
+    # extract only the adjusted close prices of the selected stock
     df = df['Adj Close']
 
-    # X = (adjclose for 2 days ago, adjclose for previous day)
+    # X = (adjclose for previous 6 days)
     # y = actual adjclose for current day
     training_input_1 = [[df[i-6], df[i-5]] for i in range(len(df[:106])) if i >= 6]
     training_input_2 = [[df[i-4], df[i-3]] for i in range(len(df[:106])) if i >= 6]
@@ -53,13 +53,12 @@ def main():
     # change data type so it can be plotted
     prices = pd.DataFrame(output)
 
-    #print("\nTraining output:\n", output)
-
+    # print various accuracies
     print("\nTraining MSE Accuracy: {:.4f}%".format(100 - mse(target, output)))
     print("Training RMSE Accuracy: {:.4f}%".format(100 - rmse(target, output)))
     print("Training MAPE Accuracy: {:.4f}%".format(100 - mape(target, output)))
 
-    # [price 2 days ago, price yesterday] for each day in range
+    # prices for previous six days of day to be predicted
     testing_input_1 = [[df[i-6], df[i-5]] for i in range(106, 156)]
     testing_input_2 = [[df[i-4], df[i-3]] for i in range(106, 156)]
     testing_input_3 = [[df[i-2], df[i-1]] for i in range(106, 156)]
@@ -72,8 +71,6 @@ def main():
     testing_input_3 = np.array(testing_input_3, dtype=float)
     test_target = np.array(test_target, dtype=float)
 
-    #print("\nTest input", input)
-    #print("\nTest target output", test_target)
 
     # Normalize
     testing_input_1 = testing_input_1/1000
@@ -92,15 +89,13 @@ def main():
     test = test.T
 
 
-    #print("\nTest output:\n", test)
-
     print("\nTest MSE Accuracy: {:.4f}%".format(100 - mse(test_target, test)))
     print("Test RMSE Accuracy: {:.4f}%".format(100 - rmse(test_target, test)))
     print("Test MAPE Accuracy: {:.4f}%".format(100 - mape(test_target, test)))
 
-    # plotting training and test on same graph
+    # plotting training and test results on same graph
 
-    plot(df, output, test)
+    plot(df[0:150], output, test)
 
 if __name__ == '__main__':
     main()
