@@ -98,7 +98,7 @@ def lstm_predict(stock, start, end):
     # accuracy
     accuracy = 100 - mape(test_target, test)
 
-    return stock, prices, pd.DataFrame(test), str(round(accuracy, 2))
+    return stock[6:], prices, pd.DataFrame(test), str(round(accuracy, 2))
 
 
 def rnn_predict(stock, start, end):
@@ -141,7 +141,7 @@ def rnn_predict(stock, start, end):
     # accuracy
     accuracy = 100 - mape(test_targets, test_outputs)
 
-    return df, pd.DataFrame(train_outputs), pd.DataFrame(test_outputs), str(round(accuracy, 2))
+    return df[4:], pd.DataFrame(train_outputs), pd.DataFrame(test_outputs), str(round(accuracy, 2))
 
 def train_test_split(df, split=0.75):
     # if split=0.75, splits data into 75% training, 25% test
