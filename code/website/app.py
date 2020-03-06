@@ -11,7 +11,7 @@ from NeuralNetworks.rnn_v2 import RNN_V2
 from NeuralNetworks.lstm import LSTM
 from NeuralNetworks.RNN import RNN
 from utils import *
-from normalize import Normalize
+from normalize import Normalize, MinMax
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
@@ -248,7 +248,7 @@ def predict(stock, start, end, NN):
     print("got i/0")
 
     # normalize data
-    scaler = Normalize(df, minmax=True)
+    scaler = MinMax(df)
     print(scaler.factor)
     train_inputs = scaler.normalize_data(train_inputs)
     train_targets = scaler.normalize_data(train_targets)

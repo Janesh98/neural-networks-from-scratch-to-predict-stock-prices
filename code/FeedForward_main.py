@@ -2,7 +2,7 @@ from NeuralNetworks.FeedForward import FeedForward
 import matplotlib.pyplot as plt
 from stock import get_stock_data, plot
 import pandas as pd
-from normalize import Normalize
+from normalize import MinMax
 import numpy as np
 from utils import *
 
@@ -23,7 +23,7 @@ def ff_main():
     assert len(X) == len(y)
     
     # Normalize
-    scaler = Normalize(df, minmax=True)
+    scaler = MinMax(df)
     X = scaler.normalize_data(X)
     y = scaler.normalize_data(y)
 

@@ -50,7 +50,7 @@ class NeuralNetworksTestCase(unittest.TestCase):
         test_output *= 1000
 
         # ensure network can predict a line with high accuracy
-        self.assertGreaterEqual(100 - mape(train_target, train_output), 99.9)
+        self.assertGreaterEqual(100 - mape(train_target, train_output), 99.00)
         self.assertGreaterEqual(100 - mape(test_target, test_output), 97.00)
 
     def test_RNN(self):
@@ -97,7 +97,7 @@ class NeuralNetworksTestCase(unittest.TestCase):
         test_output *= 1000
         test_target *= 1000
 
-        self.assertGreaterEqual(100 - mape(train_target, train_output), 99.9)
+        self.assertGreaterEqual(100 - mape(train_target, train_output), 99.00)
         self.assertGreaterEqual(100 - mape(test_target, test_output), 97.00)
 
     def test_RNN_V2(self):
@@ -136,7 +136,7 @@ class NeuralNetworksTestCase(unittest.TestCase):
         test_output *= 1000
 
         # ensure network can predict a line with high accuracy
-        self.assertGreaterEqual(100 - mape(train_target, train_output), 99.9)
+        self.assertGreaterEqual(100 - mape(train_target, train_output), 99.00)
         self.assertGreaterEqual(100 - mape(test_target, test_output), 97.00)
 
     def test_LSTM(self):
@@ -183,7 +183,7 @@ class NeuralNetworksTestCase(unittest.TestCase):
         test_output *= 1000
         test_target *= 1000
 
-        self.assertGreaterEqual(100 - mape(train_target, train_output), 99.9)
+        self.assertGreaterEqual(100 - mape(train_target, train_output), 99.00)
         self.assertGreaterEqual(100 - mape(test_target, test_output), 97.00)
 
 

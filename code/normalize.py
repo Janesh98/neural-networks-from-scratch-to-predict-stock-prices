@@ -1,41 +1,45 @@
 import numpy as np
 
 class Normalize:
-    """ normalizes the data between 0 and 1
-        and reverts data back to original values """
-    def __init__(self, data, max=False, minmax=False):
-        self.minmax = minmax
+    def __init__(self, data, max=False):
         if max:
-            self.factor = self.get_max(data)
-        if self.minmax:
-            self.minim = min(data)
-            self.factor = self.get_minmax(data)
+            self.factor = self.normalize_max(data)
         else:
-            self.factor = self.get_powers(data)
+            self.factor = self.normalize_powers(data)
 
-    def get_minmax(self, data):
-        return max(data) - min(data)
-
-    def get_max(self, data):
+    def normalize_max(self, data):
         return max(data)
 
-    def get_powers(self, data):
+    def normalize_powers(self, data):
         return 10 ** len(str(round(max(data))))
 
     # scale data between 0 and 1
     def normalize_data(self, data):
         data = np.array(data, dtype=float)
-        if self.minmax:
-            return self.normalize_minmax(data)
-        else:
-            return np.divide(data, self.factor)
+        return np.divide(data, self.factor)
 
     # revert data back to original values
     def denormalize_data(self, data):
-        if self.minmax:
-            return self.denormalize_minmax(data)
-        else:
-            return np.dot(data, self.factor)
+        return np.dot(data, self.factor)
+
+class MinMax:
+    """normalizes the data between 0 and 1
+    and reverts data back to original values"""
+    def __init__(self, data):
+        self.minim = min(data)
+        self.factor = self.get_minmax(data)
+
+    def get_minmax(self, data):
+        return max(data) - min(data)
+
+    # scale data between 0 and 1
+    def normalize_data(self, data):
+        data = np.array(data, dtype=float)
+        return self.normalize_minmax(data)
+
+    # revert data back to original values
+    def denormalize_data(self, data):
+        return self.denormalize_minmax(data)
 
     # minmax normalization
     def normalize_minmax(self, data):
