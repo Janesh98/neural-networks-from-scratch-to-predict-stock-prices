@@ -23,7 +23,7 @@ def ff_main():
     assert len(X) == len(y)
     
     # Normalize
-    scaler = Normalize(df)
+    scaler = Normalize(df, minmax=True)
     X = scaler.normalize_data(X)
     y = scaler.normalize_data(y)
 

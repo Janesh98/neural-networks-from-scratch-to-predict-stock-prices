@@ -248,7 +248,7 @@ def predict(stock, start, end, NN):
     print("got i/0")
 
     # normalize data
-    scaler = Normalize(df)
+    scaler = Normalize(df, minmax=True)
     print(scaler.factor)
     train_inputs = scaler.normalize_data(train_inputs)
     train_targets = scaler.normalize_data(train_targets)
