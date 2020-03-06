@@ -107,7 +107,7 @@ class RNN:
         testing_input_2 = testing_input_2.T
         testing_input_3 = testing_input_3.T
         final_output, hidden_output_1, hidden_output_2 = self.forward(testing_input_1, testing_input_2, testing_input_3)
-
+        # return final prediction
         return final_output
 
     #calculate normalising factor
