@@ -18,13 +18,12 @@ class RNN:
         self.output_nodes = output
         
         # weight matrices
-        # wih = weights from input(i) to hidden(h)
-        # who = weights from hidden(i) to output(o)
-        self.wih1 = np.random.randn(self.input_nodes, self.hidden_nodes_1)
-        self.wih1 = self.wih1.T
+        # wih1 = weights from input(i) to hidden(h) layer 1
+        # wh1h2 = weights from hidden(h) layer 1 to hidden(h) layer 2
+        # wh2o = weights from hidden(h) layer 2 to output(o) 
+        self.wih1 = np.random.randn(self.input_nodes, self.hidden_nodes_1).T
         self.wh1h2 = np.random.randn(self.hidden_nodes_1, self.hidden_nodes_2)
-        self.wh2o = np.random.randn(self.hidden_nodes_2, self.output_nodes)
-        self.wh2o = self.wh2o.T
+        self.wh2o = np.random.randn(self.hidden_nodes_2, self.output_nodes).T
 
         # learning rate
         self.learn = learning_rate
@@ -41,21 +40,21 @@ class RNN:
     def relu(self, x):
         return np.maximum(0, x)
 
-    def forward(self, training_input_1, training_input_2, training_input_3):
+    def forward(self, input_1, input_2, input_3):
         # calculate signals into hidden layer 1
-        hidden_input = np.dot(self.wih1, training_input_1)
+        hidden_input = np.dot(self.wih1, input_1)
         # calculate the signals emerging from hidden layer 1
         hidden_output_1 = self.tanh(hidden_input)
 
         # add new input for next hidden layer
-        hidden_output_1 = np.insert(hidden_output_1, 0, training_input_2, axis=0)
+        hidden_output_1 = np.insert(hidden_output_1, 0, input_2, axis=0)
         # calculate signals into hidden layer 2
         hidden_input_2 = np.dot(self.wh1h2, hidden_output_1)
         # calculate the signals emerging from hidden layer 1
         hidden_output_2 = self.tanh(hidden_input_2)
 
         # add new input for final output
-        hidden_output_2 = np.insert(hidden_output_2, 0, training_input_3, axis=0)
+        hidden_output_2 = np.insert(hidden_output_2, 0, input_3, axis=0)
         # calculate signals into final output layer
         final_input = np.dot(self.wh2o, hidden_output_2)
 
@@ -73,11 +72,11 @@ class RNN:
         return output_error, hidden_error_2
 
     def backpropagation(self, training_input_1, hidden_output_1, hidden_output_2, final_output, output_error, hidden_error_2):
-        # update the weights between hidden and output
+        # update the weights between hidden layers and output
         self.wh2o += self.learn * np.dot((output_error * final_output * (1.0 - final_output)), hidden_output_2.T)
         self.wh1h2 += self.learn * np.dot((output_error * final_output * (1.0 - final_output)), hidden_output_1.T)
         
-        # update the weights between input and hidden
+        # update the weights between input and hidden layer 1
         self.wih1 += self.learn * np.dot((hidden_error_2[1:] * hidden_output_1[1:] * (1.0 - hidden_output_1[1:])), training_input_1.T)
 
         # clip to prevent/reduce exploding/vanishing gradient problem
@@ -92,8 +91,10 @@ class RNN:
         training_input_3 = np.array(training_input_3, ndmin=2).T
         target = np.array(target, ndmin=2).T
 
+        # forward propogation to return final output and hidden layers output
         final_output, hidden_output_1, hidden_output_2 = self.forward(training_input_1, training_input_2, training_input_3)
 
+        # calculate errors
         output_error, hidden_error_2 = self.error(target, final_output)
 
         self.backpropagation(training_input_1, hidden_output_1, hidden_output_2, final_output, output_error, hidden_error_2)
@@ -109,6 +110,7 @@ class RNN:
 
         return final_output
 
+    #calculate normalising factor
     def normalise_factor(self, data):
         biggest = max(data)
         if len(biggest) > 1:
