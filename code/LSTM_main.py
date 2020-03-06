@@ -10,7 +10,7 @@ def main():
     # extract only the adjusted close prices of the selected stock
     df = df['Adj Close']
 
-    # X = (adjclose for previous 6 days)
+    # training inputs are for previous 6 days
     # y = actual adjclose for current day
     training_input_1 = [[df[i-6], df[i-5]] for i in range(len(df[:106])) if i >= 6]
     training_input_2 = [[df[i-4], df[i-3]] for i in range(len(df[:106])) if i >= 6]
@@ -88,7 +88,7 @@ def main():
     # transplose test results
     test = test.T
 
-
+    # print various accuracies
     print("\nTest MSE Accuracy: {:.4f}%".format(100 - mse(test_target, test)))
     print("Test RMSE Accuracy: {:.4f}%".format(100 - rmse(test_target, test)))
     print("Test MAPE Accuracy: {:.4f}%".format(100 - mape(test_target, test)))
