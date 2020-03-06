@@ -78,4 +78,5 @@ _4. How to run python files from terminal_
 
    1. FeedFoward_main.py                  <code>python3 FeedForward_main.py</code>
    2. RNN_main.py                                <code>python3 RNN_main.py</code>
-   3. LSTM_main.py                              <code>python3 LSTM_main.py</code>
+   3. rnn_v2_main.py                            <code>python3 rnn_v2_main.py</code>
+   4. LSTM_main.py                              <code>python3 LSTM_main.py</code>
